@@ -22,7 +22,7 @@ async function run() {
 
   // 5) Volver a cargar el resultado con exceljs para inspección rápida en consola
   const wb = new Workbook();
-  await wb.xlsx.load(resultBuffer);
+  await wb.xlsx.load(resultBuffer as any);
   const ws = wb.getWorksheet('Hoja1');
 
   if (!ws) {

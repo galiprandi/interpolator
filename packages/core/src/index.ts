@@ -4,7 +4,7 @@
 // - Tipos comunes
 export function parseMarkers(template: string): Array<{ type: 'interpolation' | 'array'; path: string; full: string }> {
   const regex = /(\{\{|\[\[)\s*([^\]}]+)\s*(\}\}|\]\])/g;
-  const matches = [];
+  const matches: Array<{ type: 'interpolation' | 'array'; path: string; full: string }> = [];
   let match;
 
   while ((match = regex.exec(template)) !== null) {

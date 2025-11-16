@@ -8,8 +8,12 @@
     "skipLibCheck": true,
     "declaration": true,
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": ".",
+    "types": ["node"]
   },
-  "include": ["src/**/*"],
+  "include": [
+    "packages/**/*",
+    "scripts/**/*"
+  ],
   "exclude": ["node_modules", "dist"]
 }

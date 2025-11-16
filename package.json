@@ -9,6 +9,8 @@
     "xlsx:demo": "pnpm tsx scripts/run-interpolation.ts"
   },
   "devDependencies": {
+    "@types/node": "^20.19.25",
+    "exceljs": "^4.4.0",
     "tsx": "^4.20.6",
     "typescript": "^5.0.0",
     "vitest": "^1.0.0"

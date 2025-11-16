@@ -1,5 +1,4 @@
 import { Workbook } from 'exceljs';
-import type { Buffer } from 'node:buffer';
 
 export interface InterpolateXlsxOptions {
   template: Buffer;
@@ -9,7 +8,7 @@ export interface InterpolateXlsxOptions {
 export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<Buffer> {
   const { template, data } = options;
   const workbook = new Workbook();
-  await workbook.xlsx.load(template);
+  await workbook.xlsx.load(template as any);
 
   for (const worksheet of workbook.worksheets) {
     const rowsToExpand: { rowNumber: number; arrayKey: string }[] = [];
@@ -47,8 +46,6 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
       }
 
       const originalRow = worksheet.getRow(rowNumber);
-      const originalValues = originalRow.values as any[];
-      const originalCellStyles = originalRow.getCell('A')._numberFormat; // Simplificado
 
       // Eliminar la fila original
       worksheet.spliceRows(rowNumber, 1);
@@ -56,7 +53,7 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
       // Insertar nuevas filas
       for (let i = 0; i < array.length; i++) {
         const item = array[i];
-        const newRow = worksheet.insertRow(rowNumber + i);
+        const newRow = worksheet.insertRow(rowNumber + i, []);
 
         // Copiar valores y reemplazar marcadores
         originalRow.eachCell((originalCell, colNumber) => {
@@ -86,7 +83,8 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
     }
   }
 
-  return await workbook.xlsx.writeBuffer();
+  const result = await workbook.xlsx.writeBuffer();
+  return result as any as Buffer;
 }
 
 // Reutilizar la función de core
