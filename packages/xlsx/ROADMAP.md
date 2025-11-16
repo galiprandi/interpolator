@@ -1,11 +1,13 @@
 # Roadmap `@interpolator/xlsx` v1.0.0
 
 ## 1. Corrección de errores de sintaxis y configuración
+
 - [x] ✅ Corregir error de shorthand `{ name: 'Germán' }` → `data: { name: 'Germán' }` en tests.
 - [ ] Asegurar que `tsconfig.json` y `vitest.config.ts` estén bien configurados para ESM.
 - [x] Probar que `pnpm test` no falle por errores de sintaxis.
 
 ## 2. Implementación funcional de `interpolateXlsx`
+
 - [x] ✅ Implementar lógica de lectura con `ExcelJS`.
 - [x] Detectar filas con `[[]]` (y extraer nombre del array).
 - [x] Verificar que el array exista y sea un array.
@@ -18,11 +20,13 @@
 - [x] Eliminar fila si el array es vacío.
 
 ## 3. Preservación de formato y fórmulas
+
 - [ ] Copiar estilos de celda original a las nuevas filas (color, borde, font, etc.).
 - [ ] Preservar fórmulas y ajustar referencias relativas al clonar filas.
 - [ ] Mantener merges de celdas si existen en la fila original.
 
 ## 4. Testing funcional
+
 - [ ] Crear archivo XLSX de ejemplo (`template.xlsx`) con:
   - `{{user.name}}`
   - `[[items.id]]`, `[[items.qty]]`
@@ -36,15 +40,18 @@
 - [ ] Probar fórmula → se ajusta en nuevas filas.
 
 ## 5. Manejo de errores
+
 - [ ] Lanzar error si `[[]]` usa clave que no es array.
 - [ ] Mensaje de error claro con contexto.
 
 ## 6. Empaquetado y distribución
+
 - [ ] Asegurar que `tsup` genere correctamente `dist/` con `.js`, `.cjs`, `.d.ts`.
 - [ ] Probar que `pnpm build` funcione sin errores.
 - [ ] Verificar que `package.json` tenga `exports`, `files`, `main`, `module` bien definidos.
 
 ## 7. Documentación
+
 - [ ] Crear `README.md` en `packages/xlsx` con ejemplo de uso.
 - [ ] Incluir en el README los comportamientos clave:
   - `{{}}` vs `[[]]`
@@ -53,5 +60,6 @@
 - [ ] Incluir criterios de aceptación resumidos en el README.
 
 ## 8. CI y publicación (opcional para v1)
+
 - [ ] Configurar GitHub Actions (si se desea).
 - [ ] Asegurar que `pnpm publish` funcione (cuando esté listo).
