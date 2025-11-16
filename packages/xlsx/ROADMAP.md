@@ -21,7 +21,7 @@
 
 ## 3. Preservación de formato y fórmulas
 
-- [ ] Copiar estilos de celda original a las nuevas filas (color, borde, font, etc.).
+- [x] Copiar estilos de celda original a las nuevas filas (color, borde, font, etc.).
 - [ ] Preservar fórmulas y ajustar referencias relativas al clonar filas.
 - [ ] Mantener merges de celdas si existen en la fila original.
 
