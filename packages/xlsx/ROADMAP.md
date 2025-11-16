@@ -27,17 +27,17 @@
 
 ## 4. Testing funcional
 
-- [ ] Crear archivo XLSX de ejemplo (`template.xlsx`) con:
+- [x] Crear archivo XLSX de ejemplo (`template.xlsx`) con:
   - `{{user.name}}`
   - `[[items.id]]`, `[[items.qty]]`
   - Fórmula en otra columna (ej: `=B2*C2`)
-- [ ] Probar interpolación simple → valor correcto.
-- [ ] Probar expansión de array → N filas nuevas.
-- [ ] Probar array vacío → fila eliminada.
-- [ ] Probar clave faltante → marcador intacto.
-- [ ] Probar propiedad de ítem faltante → marcador intacto.
-- [ ] Probar propiedad de ítem `null` → celda vacía.
-- [ ] Probar fórmula → se ajusta en nuevas filas.
+- [x] Probar interpolación simple → valor correcto.
+- [x] Probar expansión de array → N filas nuevas.
+- [x] Probar array vacío → fila eliminada.
+- [x] Probar clave faltante → marcador intacto.
+- [x] Probar propiedad de ítem faltante → marcador intacto.
+- [x] Probar propiedad de ítem `null` → celda vacía.
+- [x] Probar fórmula → se ajusta en nuevas filas.
 
 ## 5. Manejo de errores
 

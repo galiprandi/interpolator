@@ -102,4 +102,34 @@ describe('interpolateXlsx - functional', () => {
     expect(ws.getCell('A2').value).toBeNull();
     expect(ws.rowCount).toBeGreaterThanOrEqual(1);
   });
+
+  it('should preserve formulas and adjust relative references per cloned row', async () => {
+    const template = await buildTemplateBuffer((wb) => {
+      const ws = wb.addWorksheet('Sheet1');
+      ws.getCell('A2').value = 'ID: [[items.id]]';
+      ws.getCell('B2').value = 'Qty: [[items.qty]]';
+      ws.getCell('C2').value = 'Price: [[items.price]]';
+      // Line total formula for the template row
+      ws.getCell('D2').value = { formula: 'B2*C2' };
+    });
+
+    const data = {
+      items: [
+        { id: '001', qty: 2, price: 10 },
+        { id: '002', qty: 3, price: 20 },
+      ],
+    };
+
+    const result = await interpolateXlsx({ template, data });
+    const ws = await loadWorksheetFromResult(result, 'Sheet1');
+
+    // Formulas should be preserved and references adjusted per row
+    // First item row (template position)
+    expect(ws.getCell('D2').type).toBe(6 /* formula */);
+    expect((ws.getCell('D2').value as any).formula).toBe('B2*C2');
+
+    // Second item row should have the formula adjusted to point to its own row
+    expect(ws.getCell('D3').type).toBe(6 /* formula */);
+    expect((ws.getCell('D3').value as any).formula).toBe('B3*C3');
+  });
 });
