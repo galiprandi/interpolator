@@ -1,21 +1,21 @@
 # Roadmap `@interpolator/xlsx` v1.0.0
 
 ## 1. Corrección de errores de sintaxis y configuración
-- [ ] ✅ Corregir error de shorthand `{ name: 'Germán' }` → `data: { name: 'Germán' }` en tests.
+- [x] ✅ Corregir error de shorthand `{ name: 'Germán' }` → `data: { name: 'Germán' }` en tests.
 - [ ] Asegurar que `tsconfig.json` y `vitest.config.ts` estén bien configurados para ESM.
-- [ ] Probar que `pnpm test` no falle por errores de sintaxis.
+- [x] Probar que `pnpm test` no falle por errores de sintaxis.
 
 ## 2. Implementación funcional de `interpolateXlsx`
-- [ ] ✅ Implementar lógica de lectura con `ExcelJS`.
-- [ ] Detectar filas con `[[]]` (y extraer nombre del array).
-- [ ] Verificar que el array exista y sea un array.
-- [ ] Eliminar la fila original si tiene `[[]]`.
-- [ ] Insertar N filas nuevas (una por ítem del array).
-- [ ] Interpolar `[[array.prop]]` en cada nueva fila con el ítem correspondiente.
+- [x] ✅ Implementar lógica de lectura con `ExcelJS`.
+- [x] Detectar filas con `[[]]` (y extraer nombre del array).
+- [x] Verificar que el array exista y sea un array.
+- [x] Eliminar la fila original si tiene `[[]]`.
+- [x] Insertar N filas nuevas (una por ítem del array).
+- [x] Interpolar `[[array.prop]]` en cada nueva fila con el ítem correspondiente.
 - [ ] Interpolar `{{key}}` con el objeto raíz (fuera del loop).
-- [ ] Dejar marcadores intactos si la clave no existe.
-- [ ] Convertir `null`/`undefined` a "".
-- [ ] Eliminar fila si el array es vacío.
+- [x] Dejar marcadores intactos si la clave no existe.
+- [x] Convertir `null`/`undefined` a "".
+- [x] Eliminar fila si el array es vacío.
 
 ## 3. Preservación de formato y fórmulas
 - [ ] Copiar estilos de celda original a las nuevas filas (color, borde, font, etc.).

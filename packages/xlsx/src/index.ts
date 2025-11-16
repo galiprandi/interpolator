@@ -3,11 +3,11 @@ import type { Buffer } from 'node:buffer';
 
 export interface InterpolateXlsxOptions {
   template: Buffer;
-   Record<string, any>;
+  data: Record<string, any>;
 }
 
 export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<Buffer> {
-  const { template,  } = options;
+  const { template, data } = options;
   const workbook = new Workbook();
   await workbook.xlsx.load(template);
 
@@ -67,13 +67,15 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
             value = value.replace(/\[\[\s*([^\].]+)\.([^\]]+)\s*\]\]/g, (_, arrKey, propPath) => {
               if (arrKey !== arrayKey) return `[[${arrKey}.${propPath}]]`; // dejar intacto
               const { found, value: resolved } = resolvePath(item, propPath);
-              return found && resolved != null ? String(resolved) : `[[${arrKey}.${propPath}]]`;
+              if (!found) return `[[${arrKey}.${propPath}]]`;
+              return resolved == null ? '' : String(resolved);
             });
 
             // Interpolación simple: {{key}}
             value = value.replace(/\{\{\s*([^\}]+)\s*\}\}/g, (_, path) => {
               const { found, value: resolved } = resolvePath(data, path);
-              return found && resolved != null ? String(resolved) : `{{${path}}}`;
+              if (!found) return `{{${path}}}`;
+              return resolved == null ? '' : String(resolved);
             });
           }
 
