@@ -1,7 +1,7 @@
-// Aquí puedes poner lógica compartida como:
-// - Parser de marcadores
-// - Resolver de rutas anidadas
-// - Tipos comunes
+// Shared logic lives here, for example:
+// - Marker parser
+// - Nested path resolver
+// - Common types
 export function parseMarkers(template: string): Array<{ type: 'interpolation' | 'array'; path: string; full: string }> {
   const regex = /(\{\{|\[\[)\s*([^\]}]+)\s*(\}\}|\]\])/g;
   const matches: Array<{ type: 'interpolation' | 'array'; path: string; full: string }> = [];

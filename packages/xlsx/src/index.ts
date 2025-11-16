@@ -18,7 +18,7 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
 
       row.eachCell((cell) => {
         if (typeof cell.value === 'string') {
-          // Detectar si hay marcadores de array
+          // Detect if there are array markers
           const arrayMatch = cell.value.match(/\[\[\s*([^\].]+)(?:\.[^\]]+)?\s*\]\]/);
           if (arrayMatch) {
             const key = arrayMatch[1];
@@ -35,11 +35,11 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
       }
     });
 
-    // Procesar filas que deben expandirse
+    // Process rows that must be expanded
     for (const { rowNumber, arrayKey } of rowsToExpand) {
       const array = data[arrayKey];
       if (array === undefined) {
-        continue; // Dejar marcadores intactos
+        continue; // Leave markers untouched
       }
       if (!Array.isArray(array)) {
         throw new Error(`[[${arrayKey}.*]] requires '${arrayKey}' to be an array. Received: ${typeof array}`);
@@ -47,20 +47,20 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
 
       const originalRow = worksheet.getRow(rowNumber);
 
-      // Eliminar la fila original
+      // Remove the original row
       worksheet.spliceRows(rowNumber, 1);
 
-      // Insertar nuevas filas
+      // Insert new rows
       for (let i = 0; i < array.length; i++) {
         const item = array[i];
         const newRow = worksheet.insertRow(rowNumber + i, []);
 
-        // Copiar valores y reemplazar marcadores
+        // Copy values and replace markers
         originalRow.eachCell((originalCell, colNumber) => {
           let value = originalCell.value;
 
           if (typeof value === 'string') {
-            // Interpolación de array: [[array.key]]
+            // Array interpolation: [[array.key]]
             value = value.replace(/\[\[\s*([^\].]+)\.([^\]]+)\s*\]\]/g, (_, arrKey, propPath) => {
               if (arrKey !== arrayKey) return `[[${arrKey}.${propPath}]]`; // dejar intacto
               const { found, value: resolved } = resolvePath(item, propPath);
@@ -68,7 +68,7 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
               return resolved == null ? '' : String(resolved);
             });
 
-            // Interpolación simple: {{key}}
+            // Root-level interpolation: {{key}}
             value = value.replace(/\{\{\s*([^\}]+)\s*\}\}/g, (_, path) => {
               const { found, value: resolved } = resolvePath(data, path);
               if (!found) return `{{${path}}}`;
@@ -77,7 +77,7 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
           }
 
           newRow.getCell(colNumber).value = value;
-          // Aquí puedes copiar estilos, fórmulas, etc.
+          // TODO: copy styles, formulas, merges, etc.
         });
       }
     }
