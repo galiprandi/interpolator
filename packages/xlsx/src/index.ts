@@ -81,6 +81,23 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
         });
       }
     }
+
+    // Second pass: interpolate root-level {{ }} markers in all cells
+    worksheet.eachRow((row) => {
+      row.eachCell((cell) => {
+        if (typeof cell.value !== 'string') return;
+
+        let value = cell.value;
+
+        value = value.replace(/\{\{\s*([^\}]+)\s*\}\}/g, (_, path) => {
+          const { found, value: resolved } = resolvePath(data, path);
+          if (!found) return `{{${path}}}`;
+          return resolved == null ? '' : String(resolved);
+        });
+
+        cell.value = value;
+      });
+    });
   }
 
   const result = await workbook.xlsx.writeBuffer();

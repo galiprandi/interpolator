@@ -14,7 +14,7 @@
 - [x] Eliminar la fila original si tiene `[[]]`.
 - [x] Insertar N filas nuevas (una por ítem del array).
 - [x] Interpolar `[[array.prop]]` en cada nueva fila con el ítem correspondiente.
-- [ ] Interpolar `{{key}}` con el objeto raíz (fuera del loop).
+- [x] Interpolar `{{key}}` con el objeto raíz (fuera del loop).
 - [x] Dejar marcadores intactos si la clave no existe.
 - [x] Convertir `null`/`undefined` a "".
 - [x] Eliminar fila si el array es vacío.
