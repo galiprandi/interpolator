@@ -5,9 +5,11 @@
     "build": "pnpm -r build",
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "xlsx:demo": "pnpm tsx scripts/run-interpolation.ts"
   },
   "devDependencies": {
+    "tsx": "^4.20.6",
     "typescript": "^5.0.0",
     "vitest": "^1.0.0"
   },
