@@ -1,6 +1,6 @@
 # Project Agents Context
 
-This document provides high-level context for agents and contributors working on the `@interpolator/xlsx` package within the `@interpolator` monorepo.
+This document provides high-level context for agents and contributors working on the `@interpolator/xlsx` package within the `interpolator` monorepo (GitHub repository: `interpolator`).
 
 ---
 
