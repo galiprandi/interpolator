@@ -35,7 +35,9 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
       }
     });
 
-    // Process rows that must be expanded
+    // Process rows that must be expanded (from bottom to top to avoid index shifts)
+    rowsToExpand.sort((a, b) => b.rowNumber - a.rowNumber);
+
     for (const { rowNumber, arrayKey } of rowsToExpand) {
       const array = data[arrayKey];
       if (array === undefined) {
@@ -55,9 +57,10 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
         const item = array[i];
         const newRow = worksheet.insertRow(rowNumber + i, []);
 
-        // Copy values and replace markers
+        // Copy values and styles from the original row
         originalRow.eachCell((originalCell, colNumber) => {
           let value = originalCell.value;
+          const newCell = newRow.getCell(colNumber);
 
           if (typeof value === 'string') {
             // Array interpolation: [[array.key]]
@@ -76,8 +79,17 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
             });
           }
 
-          newRow.getCell(colNumber).value = value;
-          // TODO: copy styles, formulas, merges, etc.
+          newCell.value = value;
+          // Preserve basic styles; merges will be handled separately in a later step
+          if (originalCell.style) {
+            newCell.style = { ...originalCell.style };
+          }
+          if (originalCell.dataValidation) {
+            newCell.dataValidation = { ...originalCell.dataValidation };
+          }
+          if (originalCell.protection) {
+            newCell.protection = { ...originalCell.protection };
+          }
         });
       }
     }
