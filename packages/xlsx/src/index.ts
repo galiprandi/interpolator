@@ -38,6 +38,9 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
     // Process rows that must be expanded (from bottom to top to avoid index shifts)
     rowsToExpand.sort((a, b) => b.rowNumber - a.rowNumber);
 
+    // Capture current worksheet merge ranges once
+    const mergeRanges = getWorksheetMergeRanges(worksheet as any);
+
     for (const { rowNumber, arrayKey } of rowsToExpand) {
       const array = data[arrayKey];
       if (array === undefined) {
@@ -48,6 +51,11 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
       }
 
       const originalRow = worksheet.getRow(rowNumber);
+
+      // Collect merges that involve the template row before deleting it
+      const templateRowMerges = mergeRanges.filter((range) =>
+        mergeRangeIncludesRow(range, rowNumber),
+      );
 
       // Remove the original row
       worksheet.spliceRows(rowNumber, 1);
@@ -103,6 +111,20 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
             newCell.protection = { ...originalCell.protection };
           }
         });
+
+        // Replicate merges for this new row
+        for (const range of templateRowMerges) {
+          const parsed = parseMergeRange(range);
+          if (!parsed) continue;
+          const { startRow, endRow, startCol, endCol } = parsed;
+
+          const rowOffset = newRowNumber - rowNumber;
+          const newStartRow = startRow + rowOffset;
+          const newEndRow = endRow + rowOffset;
+          const newRange = `${startCol}${newStartRow}:${endCol}${newEndRow}`;
+
+          worksheet.mergeCells(newRange);
+        }
       }
     }
 
@@ -156,4 +178,50 @@ function adjustFormulaForRow(formula: string, fromRow: number, toRow: number): s
     if (Number.isNaN(row) || row !== fromRow) return match;
     return `${col}${toRow}`;
   });
+}
+
+// Utility helpers for working with merge ranges
+function getWorksheetMergeRanges(worksheet: any): string[] {
+  const merges = worksheet._merges;
+  if (!merges) return [];
+
+  if (typeof merges.keys === 'function') {
+    return Array.from(merges.keys());
+  }
+
+  return Object.keys(merges);
+}
+
+function mergeRangeIncludesRow(range: string, row: number): boolean {
+  const parsed = parseMergeRange(range);
+  if (!parsed) return false;
+  const { startRow, endRow } = parsed;
+  return row >= startRow && row <= endRow;
+}
+
+function parseMergeRange(range: string):
+  | { startRow: number; endRow: number; startCol: string; endCol: string }
+  | null {
+  const [startRef, endRef] = range.split(':');
+  if (!startRef || !endRef) return null;
+
+  const start = parseCellRef(startRef);
+  const end = parseCellRef(endRef);
+  if (!start || !end) return null;
+
+  return {
+    startRow: start.row,
+    endRow: end.row,
+    startCol: start.col,
+    endCol: end.col,
+  };
+}
+
+function parseCellRef(ref: string): { col: string; row: number } | null {
+  const match = /^\$?([A-Z]+)(\d+)$/.exec(ref);
+  if (!match) return null;
+  const [, col, rowStr] = match;
+  const row = Number(rowStr);
+  if (Number.isNaN(row)) return null;
+  return { col, row };
 }

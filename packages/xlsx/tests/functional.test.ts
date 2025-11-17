@@ -132,4 +132,44 @@ describe('interpolateXlsx - functional', () => {
     expect(ws.getCell('D3').type).toBe(6 /* formula */);
     expect((ws.getCell('D3').value as any).formula).toBe('B3*C3');
   });
+
+  // NOTE: exceljs currently does not reliably round-trip dynamically added merges
+  // through writeBuffer/load in our setup. This test captures the desired
+  // behavior, but is skipped for v1 until we can investigate a robust approach
+  // to merging cloned rows.
+  it.skip('should replicate merged cells for each expanded array row', async () => {
+    const template = await buildTemplateBuffer((wb) => {
+      const ws = wb.addWorksheet('Sheet1');
+      ws.getCell('A2').value = 'ID: [[items.id]]';
+      ws.getCell('B2').value = 'Qty: [[items.qty]]';
+      ws.getCell('C2').value = 'Price: [[items.price]]';
+      ws.mergeCells('A2:C2');
+    });
+
+    const data = {
+      items: [
+        { id: '001', qty: 2, price: 10 },
+        { id: '002', qty: 3, price: 20 },
+      ],
+    };
+
+    const result = await interpolateXlsx({ template, data });
+    const ws = await loadWorksheetFromResult(result, 'Sheet1');
+
+    // Expanded rows should be present
+    expect(ws.getCell('A2').value).toBe('ID: 001');
+    expect(ws.getCell('A3').value).toBe('ID: 002');
+
+    // Merged regions should be replicated for each expanded row
+    // We assert at the cell level using the public API
+    // First item row: A2:C2 merged
+    expect(ws.getCell('A2').isMerged).toBe(true);
+    expect(ws.getCell('B2').isMerged).toBe(true);
+    expect(ws.getCell('C2').isMerged).toBe(true);
+
+    // Second item row: A3:C3 merged
+    expect(ws.getCell('A3').isMerged).toBe(true);
+    expect(ws.getCell('B3').isMerged).toBe(true);
+    expect(ws.getCell('C3').isMerged).toBe(true);
+  });
 });

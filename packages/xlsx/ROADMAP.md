@@ -24,6 +24,11 @@
 - [x] Copiar estilos de celda original a las nuevas filas (color, borde, font, etc.).
 - [ ] Preservar fórmulas y ajustar referencias relativas al clonar filas.
 - [ ] Mantener merges de celdas si existen en la fila original.
+  - Notas v1:
+    - Al clonar filas, se replican manualmente los merges usando `mergeCells`.
+    - Sin embargo, en la versión actual de `exceljs`, los merges añadidos dinámicamente no se reflejan de forma fiable tras `writeBuffer` + `load`.
+    - Hay un test `should replicate merged cells for each expanded array row` en `functional.test.ts` marcado como `it.skip(...)` que describe el comportamiento deseado.
+    - Cuando se retome este feature, revisar primero la API de merges de `exceljs` (y posibles upgrades de versión) antes de implementar una solución definitiva.
 
 ## 4. Testing funcional
 
