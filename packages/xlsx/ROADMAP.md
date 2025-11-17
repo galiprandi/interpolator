@@ -3,7 +3,7 @@
 ## 1. Corrección de errores de sintaxis y configuración
 
 - [x] ✅ Corregir error de shorthand `{ name: 'Germán' }` → `data: { name: 'Germán' }` en tests.
-- [ ] Asegurar que `tsconfig.json` y `vitest.config.ts` estén bien configurados para ESM.
+- [x] Asegurar que `tsconfig.json` y `vitest.config.ts` estén bien configurados para ESM.
 - [x] Probar que `pnpm test` no falle por errores de sintaxis.
 
 ## 2. Implementación funcional de `interpolateXlsx`
