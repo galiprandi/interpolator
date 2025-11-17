@@ -1,4 +1,6 @@
-import { Workbook } from 'exceljs';
+import ExcelJS from 'exceljs';
+
+const { Workbook } = ExcelJS;
 
 export interface InterpolateXlsxOptions {
   template: Buffer;
