@@ -172,4 +172,33 @@ describe('interpolateXlsx - functional', () => {
     expect(ws.getCell('B3').isMerged).toBe(true);
     expect(ws.getCell('C3').isMerged).toBe(true);
   });
+
+  it('should throw a clear error when array key exists but is not an array', async () => {
+    const template = await buildTemplateBuffer((wb) => {
+      const ws = wb.addWorksheet('Sheet1');
+      ws.getCell('A2').value = 'ID: [[user.id]]';
+    });
+
+    const data = {
+      user: { id: 'U1' }, // not an array
+    };
+
+    await expect(interpolateXlsx({ template, data })).rejects.toThrow(
+      /\[\[user\.\*\]\] requires "user" to be an array in worksheet "Sheet1", row 2\. Received:/i,
+    );
+  });
+
+  it('should leave markers untouched when array key is missing (undefined)', async () => {
+    const template = await buildTemplateBuffer((wb) => {
+      const ws = wb.addWorksheet('Sheet1');
+      ws.getCell('A2').value = 'ID: [[payments.id]]';
+    });
+
+    const data = {};
+
+    const result = await interpolateXlsx({ template, data });
+    const ws = await loadWorksheetFromResult(result, 'Sheet1');
+
+    expect(ws.getCell('A2').value).toBe('ID: [[payments.id]]');
+  });
 });

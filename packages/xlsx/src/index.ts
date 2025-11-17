@@ -47,7 +47,12 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
         continue; // Leave markers untouched
       }
       if (!Array.isArray(array)) {
-        throw new Error(`[[${arrayKey}.*]] requires '${arrayKey}' to be an array. Received: ${typeof array}`);
+        const sheetName = worksheet.name;
+        throw new Error(
+          `[[${arrayKey}.*]] requires "${arrayKey}" to be an array in worksheet "${sheetName}", row ${rowNumber}. Received: ${
+            array === null ? 'null' : typeof array
+          }`,
+        );
       }
 
       const originalRow = worksheet.getRow(rowNumber);

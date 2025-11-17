@@ -46,8 +46,8 @@
 
 ## 5. Manejo de errores
 
-- [ ] Lanzar error si `[[]]` usa clave que no es array.
-- [ ] Mensaje de error claro con contexto.
+- [x] Lanzar error si `[[]]` usa clave que no es array.
+- [x] Mensaje de error claro con contexto.
 
 ## 6. Empaquetado y distribución
 
