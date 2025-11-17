@@ -17,7 +17,8 @@
   "scripts": {
     "build": "tsup",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "release": "pnpm build && pnpm publish --access public"
   },
   "devDependencies": {
     "tsup": "^8.0.0"
