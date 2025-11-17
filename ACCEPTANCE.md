@@ -187,9 +187,15 @@
 
 ### 8.2. Preserve merges
 
-- **Given** a row with merged cells,
-- **When** it is repeated,
-- **Then** the new rows should have the same merges.
+- **Given** a row with merged cells that **does not contain** any `[[]]` markers,
+- **Then** those merges must remain unchanged after interpolation.
+
+### 8.3. Preserve merges in repeated rows (best-effort)
+
+- **Given** a template row that contains `[[]]` markers and a **simple horizontal** merged cell limited to that same row (e.g. `C3:D3`),
+- **When** the row is repeated,
+- **Then** the implementation attempts to replicate the same horizontal merge for each new row (**best-effort**, depending on ExcelJS behavior).
+- **And** merges that span multiple rows (vertical merges) or that cross repeated and non-repeated rows are **not supported** and may behave unpredictably.
 
 ---
 

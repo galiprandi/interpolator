@@ -109,8 +109,13 @@ Use `[[array.key]]` in a row to mark it as **repeatable**:
 - Cell styles (font, fill, border, alignment, etc.) from the template row are copied to each new row.
 - Formulas in the template row are preserved and adjusted when they reference the template row number
   (e.g. `=B2*C2` becomes `=B3*C3` in the next cloned row).
-- Merged cells: the implementation attempts to replicate merges for cloned rows, but due to current
-  ExcelJS limitations, this behavior is **best-effort** and not fully guaranteed across all scenarios.
+- Merged cells:
+  - Merges that exist in template rows **without** `[[]]` markers are preserved as-is after interpolation.
+  - When repeating rows that contain `[[]]`, the implementation attempts to replicate **simple horizontal**
+    merges from the template row into each cloned row, but this is **best-effort** and relies on current
+    ExcelJS behavior.
+  - Vertical merges (spanning multiple rows) or merges that cross repeated and non-repeated rows are
+    **not supported** and may behave unpredictably.
 
 ## Error behavior
 
