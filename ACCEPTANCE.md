@@ -1,214 +1,214 @@
-# Criterios de Aceptación: `@interpolator/xlsx`
+# Acceptance Criteria: `@interpolator/xlsx`
 
-## 1. Sintaxis de marcadores
+## 1. Marker syntax
 
-### 1.1. Interpolación simple con `{{}}`
+### 1.1. Simple interpolation with `{{}}`
 
-- **Dado** una celda con `{{user.name}}`,
-- **Y** `data` incluye `{ user: { name: "Germán" } }`,
-- **Entonces** la celda debe contener `"Germán"`.
+- **Given** a cell with `{{user.name}}`,
+- **And** `data` includes `{ user: { name: "Germán" } }`,
+- **Then** the cell must contain `"Germán"`.
 
-### 1.2. Interpolación con espacios
+### 1.2. Interpolation with spaces
 
-- **Dado** una celda con `{{ user.name }}`,
-- **Y** `data` incluye `{ user: { name: "Germán" } }`,
-- **Entonces** debe comportarse igual que `{{user.name}}`.
+- **Given** a cell with `{{ user.name }}`,
+- **And** `data` includes `{ user: { name: "Germán" } }`,
+- **Then** it must behave the same as `{{user.name}}`.
 
-### 1.3. Interpolación anidada profunda
+### 1.3. Deep nested interpolation
 
-- **Dado** `{{profile.contact.email}}`,
-- **Y** datos: `{ profile: { contact: { email: "g@a.com" } } }`,
-- **Entonces** la celda debe contener `"g@a.com"`.
+- **Given** `{{profile.contact.email}}`,
+- **And** data: `{ profile: { contact: { email: "g@a.com" } } }`,
+- **Then** the cell must contain `"g@a.com"`.
 
-### 1.4. Clave no existe en raíz
+### 1.4. Root key does not exist
 
-- **Dado** `{{user.name}}`,
-- **Y** `user` no existe en `data`,
-- **Entonces** la celda debe contener literalmente `{{user.name}}`.
+- **Given** `{{user.name}}`,
+- **And** `user` does not exist in `data`,
+- **Then** the cell must contain the literal string `{{user.name}}`.
 
-### 1.5. Propiedad intermedia no existe
+### 1.5. Intermediate property does not exist
 
-- **Dado** `{{user.profile.email}}`,
-- **Y** `user` existe pero no tiene `profile`,
-- **Entonces** la celda debe contener `{{user.profile.email}}`.
+- **Given** `{{user.profile.email}}`,
+- **And** `user` exists but has no `profile` property,
+- **Then** the cell must contain `{{user.profile.email}}`.
 
-### 1.6. Valor `null` o `undefined`
+### 1.6. Value is `null` or `undefined`
 
-- **Dado** `{{user.name}}`,
-- **Y** `user.name` es `null` o `undefined`,
-- **Entonces** la celda debe quedar vacía (`""`).
-
----
-
-## 2. Interpolación de arrays con `[[]]`
-
-### 2.1. Array válido no vacío
-
-- **Dado** una fila con `[[payments.id]]` y `[[payments.date]]`,
-- **Y** `payments` es: `[{ "id": "P1", "date": "2025-01-01" }, { "id": "P2", "date": "2025-01-02" }]`,
-- **Entonces** la fila original debe eliminarse,
-- **Y** deben insertarse 2 filas nuevas con los valores correspondientes.
-
-### 2.2. Array vacío
-
-- **Dado** una fila con `[[payments.id]]`,
-- **Y** `payments` es `[]`,
-- **Entonces** la fila debe eliminarse del documento.
-
-### 2.3. Clave de array no existe
-
-- **Dado** `[[payments.id]]`,
-- **Y** `payments` no existe en `data`,
-- **Entonces** la celda debe contener `[[payments.id]]`,
-- **Y** la fila **no debe eliminarse ni repetirse**.
-
-### 2.4. Clave de array no es un array
-
-- **Dado** `[[user.id]]`,
-- **Y** `user` existe pero es un objeto (no array),
-- **Entonces** debe lanzar un error con mensaje claro:  
-  > “`[[user.id]]` requires 'user' to be an array. Received: [object Object]”.
-
-### 2.5. Propiedad de ítem no existe
-
-- **Dado** `[[payments.id]]`,
-- **Y** un ítem en `payments` no tiene `id`,
-- **Entonces** la celda debe contener `[[payments.id]]`.
-
-### 2.6. Propiedad de ítem es `null`/`undefined`
-
-- **Dado** `[[payments.amount]]`,
-- **Y** un ítem tiene `amount: null`,
-- **Entonces** la celda debe quedar vacía (`""`).
+- **Given** `{{user.name}}`,
+- **And** `user.name` is `null` or `undefined`,
+- **Then** the cell must be empty (`""`).
 
 ---
 
-## 3. Comportamiento con fórmulas y estilos
+## 2. Array interpolation with `[[]]`
 
-### 3.1. Fórmulas se preservan y ajustan
+### 2.1. Valid non-empty array
 
-- **Dado** una celda en fila repetible con fórmula `=B3*C3`,
-- **Cuando** la fila se expande,
-- **Entonces** cada nueva fila debe tener fórmula ajustada: `=B4*C4`, `=B5*C5`, etc.
+- **Given** a row with `[[payments.id]]` and `[[payments.date]]`,
+- **And** `payments` is: `[{ "id": "P1", "date": "2025-01-01" }, { "id": "P2", "date": "2025-01-02" }]`,
+- **Then** the original row must be removed,
+- **And** 2 new rows must be inserted with the corresponding values.
 
-### 3.2. Estilos se copian a nuevas filas
+### 2.2. Empty array
 
-- **Dado** una fila con celdas con:
-  - fondo azul,
-  - borde grueso,
-  - tipo de letra negrita,
-- **Cuando** la fila se expande,
-- **Entonces** todas esas propiedades deben copiarse fielmente a las nuevas filas.
+- **Given** a row with `[[payments.id]]`,
+- **And** `payments` is `[]`,
+- **Then** the row must be removed from the document.
 
-### 3.3. Múltiples hojas
+### 2.3. Array key does not exist
 
-- **Dado** un archivo con 2 hojas,
-- **Y** solo la primera contiene marcadores,
-- **Entonces** la segunda hoja debe permanecer inalterada.
+- **Given** `[[payments.id]]`,
+- **And** `payments` does not exist in `data`,
+- **Then** the cell must contain `[[payments.id]]`,
+- **And** the row **must not be removed or repeated**.
+
+### 2.4. Array key is not an array
+
+- **Given** `[[user.id]]`,
+- **And** `user` exists but is an object (not an array),
+- **Then** it must throw an error with a clear message:  
+  > "`[[user.id]]` requires 'user' to be an array. Received: [object Object]".
+
+### 2.5. Item property does not exist
+
+- **Given** `[[payments.id]]`,
+- **And** an item in `payments` does not have `id`,
+- **Then** the cell must contain `[[payments.id]]`.
+
+### 2.6. Item property is `null`/`undefined`
+
+- **Given** `[[payments.amount]]`,
+- **And** an item has `amount: null`,
+- **Then** the cell must be empty (`""`).
 
 ---
 
-## 4. Coexistencia de `{{}}` y `[[]]`
+## 3. Behavior with formulas and styles
 
-### 4.1. Combinación válida
+### 3.1. Formulas are preserved and adjusted
 
-- **Dado** una fila con `{{user.name}}` y `[[payments.id]]`,
-- **Y** `payments` es un array válido,
-- **Entonces** la fila se repite N veces,
-- **Y** `{{user.name}}` se resuelve contra el objeto raíz en cada repetición,
-- **Y** `[[payments.id]]` se resuelve contra el ítem actual.
+- **Given** a cell in a repeatable row with formula `=B3*C3`,
+- **When** the row is expanded,
+- **Then** each new row must have an adjusted formula: `=B4*C4`, `=B5*C5`, etc.
+
+### 3.2. Styles are copied to new rows
+
+- **Given** a row with cells that have:
+  - blue background,
+  - thick border,
+  - bold font,
+- **When** the row is expanded,
+- **Then** all those properties must be faithfully copied to the new rows.
+
+### 3.3. Multiple worksheets
+
+- **Given** a workbook with 2 worksheets,
+- **And** only the first one contains markers,
+- **Then** the second worksheet must remain unchanged.
 
 ---
 
-## 5. Entrada y salida
+## 4. Coexistence of `{{}}` and `[[]]`
 
-### 5.1. Entrada como Buffer
+### 4.1. Valid combination
 
-- **Dado** un `Buffer` de archivo `.xlsx` válido,
-- **Y** un objeto `data` plano,
-- **Entonces** debe devolver `Promise<Buffer>` del archivo resultante.
+- **Given** a row with `{{user.name}}` and `[[payments.id]]`,
+- **And** `payments` is a valid array,
+- **Then** the row is repeated N times,
+- **And** `{{user.name}}` is resolved against the root data object in each repeated row,
+- **And** `[[payments.id]]` is resolved against the current array item.
 
-### 5.2. Salida válida
+---
 
-- **El Buffer resultante** debe abrirse sin errores en:
+## 5. Input and output
+
+### 5.1. Input as Buffer
+
+- **Given** a valid `.xlsx` file as a `Buffer`,
+- **And** a plain `data` object,
+- **Then** it must return a `Promise<Buffer>` for the resulting file.
+
+### 5.2. Valid output
+
+- **The resulting Buffer** must open without errors in:
   - Microsoft Excel
   - Google Sheets
   - LibreOffice Calc
 
 ---
 
-## 6. Arquitectura y stack técnico
+## 6. Architecture and technical stack
 
-### 6.1. Monorepo con pnpm
+### 6.1. Monorepo with pnpm
 
-- **El paquete** debe estar en un workspace gestionado por `pnpm`.
+- **The package** must live in a workspace managed by `pnpm`.
 
-### 6.2. ESM y CJS
+### 6.2. ESM and CJS
 
-- **Debe distribuirse** en ambos formatos: ESM y CJS.
+- **It must be distributed** in both formats: ESM and CJS.
 
-### 6.3. Dependencia de ExcelJS
+### 6.3. ExcelJS dependency
 
-- **ExcelJS** debe ser una dependencia directa (no peer).
-- **No debe traer polyfills** ni depender de navegador.
+- **ExcelJS** must be a direct dependency (not a peer dependency).
+- **It must not require browser-specific polyfills** or depend on a browser environment.
 
-### 6.4. Testing con Vitest
+### 6.4. Testing with Vitest
 
-- **Todos los tests** deben correr con Vitest.
-- **La cobertura debe ser ≥90%**.
+- **All tests** must run with Vitest.
+- **Coverage should be ≥90%**.
 
-### 6.5. Tipos de TypeScript
+### 6.5. TypeScript types
 
-- **La API debe estar completamente tipada** y generar `.d.ts`.
-
----
-
-## 7. Comportamiento de errores
-
-### 7.1. Error claro si clave no es array
-
-- **Cuando** `[[]]` se usa con una clave que no es array,
-- **Entonces** debe lanzar error con contexto: nombre del marcador, tipo recibido.
-
-### 7.2. Error si hay mezcla de arrays en misma fila
-
-- **Dado** una fila con `[[items.id]]` y `[[payments.id]]`,
-- **Entonces** debe lanzar error: “Mixed array keys in row X: items vs payments”.
+- **The API must be fully typed** and generate `.d.ts` files.
 
 ---
 
-## 8. Preservación de contexto visual
+## 7. Error behavior
 
-### 8.1. Mantener fórmulas en celdas no interpoladas
+### 7.1. Clear error if key is not an array
 
-- **Dado** una fila con `[[]]` y una celda con fórmula `=SUM(A:A)`,
-- **Cuando** la fila se repite,
-- **Entonces** la fórmula debe mantenerse en cada nueva fila.
+- **When** `[[]]` is used with a key that is not an array,
+- **Then** it must throw an error with context: marker name, received type.
 
-### 8.2. Mantener merges
+### 7.2. Error on mixed arrays in the same row
 
-- **Dado** una fila con celdas mergiadas,
-- **Cuando** se repite,
-- **Entonces** las nuevas filas deben tener los mismos merges.
+- **Given** a row with `[[items.id]]` and `[[payments.id]]`,
+- **Then** it must throw an error: "Mixed array keys in row X: items vs payments".
 
 ---
 
-## 9. API pública
+## 8. Visual context preservation
 
-### 9.1. Nombre y firma
+### 8.1. Preserve formulas in non-interpolated cells
 
-- **Debe exportar** `interpolateXlsx(options: { template: Buffer;  any })`.
+- **Given** a row with `[[]]` and a cell with formula `=SUM(A:A)`,
+- **When** the row is repeated,
+- **Then** the formula must be preserved in each new row.
 
-### 9.2. Asincrónico
+### 8.2. Preserve merges
 
-- **Debe retornar** `Promise<Buffer>`.
+- **Given** a row with merged cells,
+- **When** it is repeated,
+- **Then** the new rows should have the same merges.
 
 ---
 
-## 10. Documentación y uso
+## 9. Public API
 
-### 10.1. README debe incluir
+### 9.1. Name and signature
 
-- Ejemplo de uso básico.
-- Explicación de `{{}}` vs `[[]]`.
-- Comportamiento con arrays vacíos y claves faltantes.
+- **It must export** `interpolateXlsx(options: { template: Buffer; data: any })`.
+
+### 9.2. Asynchronous
+
+- **It must return** a `Promise<Buffer>`.
+
+---
+
+## 10. Documentation and usage
+
+### 10.1. README must include
+
+- A basic usage example.
+- Explanation of `{{}}` vs `[[]]`.
+- Behavior with empty arrays and missing keys.
