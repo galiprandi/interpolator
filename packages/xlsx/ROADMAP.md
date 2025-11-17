@@ -51,9 +51,9 @@
 
 ## 6. Empaquetado y distribución
 
-- [ ] Asegurar que `tsup` genere correctamente `dist/` con `.js`, `.cjs`, `.d.ts`.
-- [ ] Probar que `pnpm build` funcione sin errores.
-- [ ] Verificar que `package.json` tenga `exports`, `files`, `main`, `module` bien definidos.
+- [x] Asegurar que `tsup` genere correctamente `dist/` con `.js`, `.cjs`, `.d.ts`.
+- [x] Probar que `pnpm build` funcione sin errores.
+- [x] Verificar que `package.json` tenga `exports`, `files`, `main`, `module` bien definidos.
 
 ## 7. Documentación
 
