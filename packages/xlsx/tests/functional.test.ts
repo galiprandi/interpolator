@@ -85,6 +85,34 @@ describe('interpolateXlsx - functional', () => {
     expect(ws.getCell('A2').value).toBe('Missing: {{user.missing}}');
   });
 
+  it('should leave {{}} markers intact when the root key does not exist', async () => {
+    const template = await buildTemplateBuffer((wb) => {
+      const ws = wb.addWorksheet('Sheet1');
+      ws.getCell('A1').value = 'Hello {{profile.name}}';
+    });
+
+    const data = {}; // no profile key
+
+    const result = await interpolateXlsx({ template, data });
+    const ws = await loadWorksheetFromResult(result, 'Sheet1');
+
+    expect(ws.getCell('A1').value).toBe('Hello {{profile.name}}');
+  });
+
+  it('should leave {{}} markers intact when an intermediate nested property is missing', async () => {
+    const template = await buildTemplateBuffer((wb) => {
+      const ws = wb.addWorksheet('Sheet1');
+      ws.getCell('A1').value = 'Email: {{user.profile.email}}';
+    });
+
+    const data = { user: {} }; // user.profile is missing
+
+    const result = await interpolateXlsx({ template, data });
+    const ws = await loadWorksheetFromResult(result, 'Sheet1');
+
+    expect(ws.getCell('A1').value).toBe('Email: {{user.profile.email}}');
+  });
+
   it('should remove the template row when the array is empty', async () => {
     const template = await buildTemplateBuffer((wb) => {
       const ws = wb.addWorksheet('Sheet1');
@@ -101,6 +129,42 @@ describe('interpolateXlsx - functional', () => {
     expect(ws.getCell('A1').value).toBe('Header');
     expect(ws.getCell('A2').value).toBeNull();
     expect(ws.rowCount).toBeGreaterThanOrEqual(1);
+  });
+
+  it('should leave [[array.prop]] markers intact when the item property does not exist', async () => {
+    const template = await buildTemplateBuffer((wb) => {
+      const ws = wb.addWorksheet('Sheet1');
+      ws.getCell('A2').value = 'ID: [[items.id]] - Name: [[items.name]]';
+    });
+
+    const data = {
+      items: [{ id: '001' }], // no name property
+    };
+
+    const result = await interpolateXlsx({ template, data });
+    const ws = await loadWorksheetFromResult(result, 'Sheet1');
+
+    expect(ws.getCell('A2').value).toBe('ID: 001 - Name: [[items.name]]');
+  });
+
+  it('should render empty string when an item property is null or undefined', async () => {
+    const template = await buildTemplateBuffer((wb) => {
+      const ws = wb.addWorksheet('Sheet1');
+      // Single template row that will be expanded into two rows
+      ws.getCell('A2').value = 'Amount: [[payments.amount]]';
+    });
+
+    const data = {
+      payments: [{ amount: null }, { amount: undefined }],
+    };
+
+    const result = await interpolateXlsx({ template, data });
+    const ws = await loadWorksheetFromResult(result, 'Sheet1');
+
+    // Row for first item (null)
+    expect(ws.getCell('A2').value).toBe('Amount: ');
+    // Row for second item (undefined)
+    expect(ws.getCell('A3').value).toBe('Amount: ');
   });
 
   it('should preserve formulas and adjust relative references per cloned row', async () => {
@@ -131,6 +195,33 @@ describe('interpolateXlsx - functional', () => {
     // Second item row should have the formula adjusted to point to its own row
     expect(ws.getCell('D3').type).toBe(6 /* formula */);
     expect((ws.getCell('D3').value as any).formula).toBe('B3*C3');
+  });
+
+  it('should preserve basic cell styles when expanding array rows', async () => {
+    const template = await buildTemplateBuffer((wb) => {
+      const ws = wb.addWorksheet('Sheet1');
+      const row = ws.getRow(2);
+      row.getCell(1).value = 'ID: [[items.id]]';
+      row.getCell(1).style = {
+        font: { bold: true },
+        alignment: { horizontal: 'center' },
+      };
+    });
+
+    const data = {
+      items: [{ id: '001' }, { id: '002' }],
+    };
+
+    const result = await interpolateXlsx({ template, data });
+    const ws = await loadWorksheetFromResult(result, 'Sheet1');
+
+    const cell1 = ws.getCell('A2');
+    const cell2 = ws.getCell('A3');
+
+    expect(cell1.style.font?.bold).toBe(true);
+    expect(cell2.style.font?.bold).toBe(true);
+    expect(cell1.style.alignment?.horizontal).toBe('center');
+    expect(cell2.style.alignment?.horizontal).toBe('center');
   });
 
   // NOTE: exceljs currently does not reliably round-trip dynamically added merges
@@ -188,6 +279,37 @@ describe('interpolateXlsx - functional', () => {
     );
   });
 
+  it('should keep other worksheets unchanged when only one contains markers', async () => {
+    const template = await buildTemplateBuffer((wb) => {
+      const ws1 = wb.addWorksheet('WithMarkers');
+      const ws2 = wb.addWorksheet('StaticSheet');
+
+      ws1.getCell('A1').value = 'Client: {{client.name}}';
+      ws1.getCell('A2').value = 'ID: [[items.id]]';
+
+      ws2.getCell('A1').value = 'Static header';
+      ws2.getCell('A2').value = 'Static value';
+    });
+
+    const data = {
+      client: { name: 'Germán' },
+      items: [{ id: '001' }],
+    };
+
+    const result = await interpolateXlsx({ template, data });
+    const wb = new Workbook();
+    await wb.xlsx.load(result as any);
+
+    const ws1 = wb.getWorksheet('WithMarkers')!;
+    const ws2 = wb.getWorksheet('StaticSheet')!;
+
+    expect(ws1.getCell('A1').value).toBe('Client: Germán');
+    expect(ws1.getCell('A2').value).toBe('ID: 001');
+
+    expect(ws2.getCell('A1').value).toBe('Static header');
+    expect(ws2.getCell('A2').value).toBe('Static value');
+  });
+
   it('should leave markers untouched when array key is missing (undefined)', async () => {
     const template = await buildTemplateBuffer((wb) => {
       const ws = wb.addWorksheet('Sheet1');
@@ -200,5 +322,22 @@ describe('interpolateXlsx - functional', () => {
     const ws = await loadWorksheetFromResult(result, 'Sheet1');
 
     expect(ws.getCell('A2').value).toBe('ID: [[payments.id]]');
+  });
+
+  it('should throw an error when a row mixes different array keys', async () => {
+    const template = await buildTemplateBuffer((wb) => {
+      const ws = wb.addWorksheet('Sheet1');
+      ws.getCell('A2').value = 'ID: [[items.id]]';
+      ws.getCell('B2').value = 'Payment: [[payments.id]]';
+    });
+
+    const data = {
+      items: [{ id: 'I1' }],
+      payments: [{ id: 'P1' }],
+    };
+
+    await expect(interpolateXlsx({ template, data })).rejects.toThrow(
+      /Mixed array keys in row 2: items vs payments/i,
+    );
   });
 });
