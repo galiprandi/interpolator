@@ -6,7 +6,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "tsc --noEmit",
-    "xlsx:demo": "pnpm tsx scripts/run-interpolation.ts"
+    "xlsx:demo": "pnpm tsx scripts/run-interpolation.ts",
+    "release:xlsx": "pnpm -C packages/xlsx run release"
   },
   "devDependencies": {
     "@types/node": "^20.19.25",

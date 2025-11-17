@@ -17,7 +17,8 @@
   "scripts": {
     "build": "tsup",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "release": "pnpm test && pnpm build && pnpm publish --access public"
   },
   "dependencies": {
     "@interpolator/core": "workspace:*",
