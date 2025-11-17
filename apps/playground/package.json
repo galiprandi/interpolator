@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev:xlsx:invoice": "tsx src/xlsx-invoice-demo.ts"
+    "examples": "tsx src/run-example.ts"
   },
   "dependencies": {
     "@interpolator/core": "workspace:*",

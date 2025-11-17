@@ -7,9 +7,7 @@
     "test:watch": "vitest",
     "lint": "tsc --noEmit",
     "xlsx:demo": "pnpm tsx scripts/run-interpolation.ts",
-    "release:xlsx": "pnpm -C packages/xlsx run release",
-    "playground:xlsx:invoice": "tsx apps/playground/src/run-example.ts invoice",
-    "playground:xlsx:invoice-2": "tsx apps/playground/src/run-example.ts invoice-2"
+    "release:xlsx": "pnpm -C packages/xlsx run release"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.5",
