@@ -28,10 +28,10 @@ const template = readFileSync('./invoice-template.xlsx');
 
 // 2) Provide your data object
 const data = {
-  client: { name: 'Germán Aliprandi', email: 'g@example.com' },
+  client: { name: 'Germán Aliprandi', email: 'galiprandi@gmail.com' },
   items: [
     { id: '001', description: 'Whisky Alberour 12', qty: 2, price: 12000 },
-    { id: '002', description: 'Glass set', qty: 1, price: 3000 },
+    { id: '002', description: 'Whisky Johnnie Walker Green', qty: 1, price: 15000 },
   ],
   total: 27000,
 };
