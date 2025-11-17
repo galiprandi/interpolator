@@ -1,0 +1,45 @@
+{
+  "invoice": {
+    "number": "INV-2025-001",
+    "date": "2025-01-15",
+    "dueDate": "2025-02-15"
+  },
+  "seller": {
+    "name": "Playground Store",
+    "address": "123 Playground Ave, Example City",
+    "city": "Example City, 123, Example Country",
+    "vatId": "AR-20304050607",
+    "phone": "123456789",
+    "website": "https://playground.store"
+  },
+  "client": {
+    "name": "John Doe",
+    "company": "",
+    "address": "456 Client St, Sample Town",
+    "city": "Sample Town, 456, Sample Country",
+    "vatId": "AR-20999888777",
+    "phone": "987654321"
+  },
+  "items": [
+    {
+      "description": "Whisky Alberour 12",
+      "qty": 2,
+      "tax": "21%",
+      "unitPrice": 12000,
+      "total": 24000
+    },
+    {
+      "description": "Glass set",
+      "qty": 1,
+      "tax": "21%",
+      "unitPrice": 3000,
+      "total": 3000
+    }
+  ],
+  "totals": {
+    "subtotal": 27000,
+    "taxRate": "21%",
+    "taxAmount": 5700,
+    "total": 32700
+  }
+}

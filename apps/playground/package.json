@@ -1,0 +1,15 @@
+{
+  "name": "@interpolator/playground",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev:xlsx:invoice": "tsx src/xlsx-invoice-demo.ts"
+  },
+  "dependencies": {
+    "@interpolator/core": "workspace:*",
+    "@interpolator/xlsx": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.6"
+  }
+}

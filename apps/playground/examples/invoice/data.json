@@ -1,0 +1,24 @@
+{
+  "client": { "name": "Playground User", "email": "playground@example.com" },
+  "items": [
+    {
+      "id": "001",
+      "description": "Whisky Alberour 12",
+      "qty": 2,
+      "price": 12000,
+      "date": "2025-01-01",
+      "missingProp": 0
+    },
+    {
+      "id": "002",
+      "description": "Glass set",
+      "qty": 1,
+      "price": 3000,
+      "date": "2025-01-02",
+      "missingProp": 0
+    }
+  ],
+  "total": 27000,
+  "name": "Playground Invoice",
+  "date": "2025-01-01"
+}
