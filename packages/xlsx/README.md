@@ -3,7 +3,7 @@
 Excel template interpolation for Node.js. Fill `.xlsx` templates using a simple marker syntax and a plain JavaScript object, while preserving styles and formulas.
 
 - Interpolate single values with `{{key}}`.
-- Repeat rows for arrays with `[[array.key]]`.
+- Repeat rows for arrays with `[[array.key]]` (objects) or `[[array]]` (primitives).
 - Preserve existing formatting and formulas in the template.
 - Keep markers when data is missing for easier debugging.
 
@@ -69,11 +69,12 @@ Use `{{path.to.value}}` for values that do not depend on the current row:
 
 ### `[[]]` – array row expansion
 
-Use `[[array.key]]` in a row to mark it as **repeatable**:
+Use `[[array.key]]` (for objects) or `[[array]]` (for primitives) in a row to mark it as **repeatable**:
 
-- The array name (e.g. `items` in `[[items.id]]`) must exist at the root of `data` and be an array.
-- The row containing `[[items.*]]` is removed and replaced by **N rows**, one per item in `data.items`.
-- Each `[[items.prop]]` is resolved against the corresponding item.
+- The array name (e.g. `items` in `[[items.id]]` or `[[categories]]`) must exist at the root of `data` and be an array.
+- The row containing `[[items.*]]` or `[[items]]` is removed and replaced by **N rows**, one per item in the array.
+- `[[array.prop]]` is resolved against the current item properties.
+- `[[array]]` (without property) is resolved to the item itself (useful for arrays of strings or numbers).
 - The same row can mix `{{}}` and `[[]]`:
 
   ```text
@@ -103,6 +104,15 @@ Use `[[array.key]]` in a row to mark it as **repeatable**:
   - The marker (e.g. `[[items.missing]]`) is left as-is.
 - If the item property is `null` or `undefined`:
   - The cell becomes an empty string (`""`).
+
+#### Special index markers
+
+You can use these special property paths within an array context to include indices or counters:
+
+- `[[array.$index]]`: The 0-based index of the current item (0, 1, 2, ...).
+- `[[array.$index1]]` or `[[array.$number]]`: The 1-based index of the current item (1, 2, 3, ...).
+
+Example: `[[items.$number]]. [[items.name]]` will produce "1. First Item", "2. Second Item", etc.
 
 ## Formatting, formulas and merges
 

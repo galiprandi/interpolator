@@ -88,9 +88,17 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
             };
             // Styles & validation will be copied below; skip marker interpolation for formulas
           } else if (typeof value === 'string') {
-            // Array interpolation: [[array.key]]
-            value = value.replace(/\[\[\s*([^\].]+)\.([^\]]+)\s*\]\]/g, (_, arrKey, propPath) => {
-              if (arrKey !== arrayKey) return `[[${arrKey}.${propPath}]]`; // dejar intacto
+            // Array interpolation: [[array.key]] or [[array]]
+            value = value.replace(/\[\[\s*([^\].\s]+)(?:\.([^\]\s]+))?\s*\]\]/g, (_, arrKey, propPath) => {
+              if (arrKey !== arrayKey) return propPath ? `[[${arrKey}.${propPath}]]` : `[[${arrKey}]]`;
+
+              if (!propPath) {
+                return item == null ? '' : String(item);
+              }
+
+              if (propPath === '$index') return String(i);
+              if (propPath === '$index1' || propPath === '$number') return String(i + 1);
+
               const { found, value: resolved } = resolvePath(item, propPath);
               if (!found) return `[[${arrKey}.${propPath}]]`;
               return resolved == null ? '' : String(resolved);

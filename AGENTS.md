@@ -107,11 +107,13 @@ After interpolation with the data above, the result would be:
 - If the key is missing, the marker remains in the cell as-is (e.g., `{{missing.key}}`).
 - If the value is `null` or `undefined`, the cell becomes empty (`""`).
 
-### 2. Array-Based Row Repetition: `[[array.key]]`
+### 2. Array-Based Row Repetition: `[[array.key]]` or `[[array]]`
 
 - Used inside a row to indicate that the entire row should be repeated for each item in the `array`.
 - The array name (`array`) must exist at the root of the data object and must be an array.
 - Each occurrence of `[[array.key]]` in the row is replaced with the value of `item.key` from the current iteration.
+- `[[array]]` (without property) is replaced by the item itself (useful for primitive arrays).
+- Special index markers are supported: `[[array.$index]]` (0-based), `[[array.$index1]]` or `[[array.$number]]` (1-based).
 - If the array is empty (`[]`), the row is removed from the output.
 - If `array` does not exist in the data, markers are left as-is.
 - If an item in the array does not have the specified key, the marker remains (e.g., `[[items.missing]]`).
