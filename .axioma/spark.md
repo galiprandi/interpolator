@@ -7,3 +7,7 @@
 ## 2025-05-16 - [Smart Type Preservation & Dynamic Metadata]
 **Learning:** Automatically preserving data types (like Dates and Numbers) when a cell contains only a marker is much more intuitive than forcing everything to strings. Also, interpolating worksheet names is a frequently requested feature for multi-sheet reports.
 **Pattern:** Detect "single-marker cells" using regex anchor patterns (`/^...$/`) to decide between direct value assignment (preserving type) and string replacement.
+
+## 2025-05-17 - [Enhanced Array Metadata]
+**Learning:** Providing boolean flags like `$first` and `$last` allows users to implement conditional formatting or separators without complex logic in the data source.
+**Pattern:** Extend existing metadata marker logic to support Booleans and array-level metrics (like `$length`) using the same path-based resolution pattern.

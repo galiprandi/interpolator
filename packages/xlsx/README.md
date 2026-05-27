@@ -111,8 +111,10 @@ You can use these special property paths within an array context to include indi
 
 - `[[array.$index]]`: The 0-based index of the current item (0, 1, 2, ...).
 - `[[array.$index1]]` or `[[array.$number]]`: The 1-based index of the current item (1, 2, 3, ...).
+- `[[array.$first]]` / `[[array.$last]]`: Boolean flags (`true`/`false`) for the first and last items.
+- `[[array.$length]]`: The total number of items in the array.
 
-Example: `[[items.$number]]. [[items.name]]` will produce "1. First Item", "2. Second Item", etc.
+Example: `[[items.$number]] of [[items.$length]]: [[items.name]]` will produce "1 of 10: First Item", etc.
 
 ## Formatting, formulas and merges
 
