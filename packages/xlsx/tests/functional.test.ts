@@ -388,6 +388,48 @@ describe('interpolateXlsx - functional', () => {
     expect(ws.getCell('D2').value).toBe('Second');
   });
 
+  it('should support special metadata markers $first, $last, and $length', async () => {
+    const template = await buildTemplateBuffer((wb) => {
+      const ws = wb.addWorksheet('Sheet1');
+      ws.getCell('A1').value = '[[items.$first]]';
+      ws.getCell('B1').value = '[[items.$last]]';
+      ws.getCell('C1').value = '[[items.$length]]';
+    });
+
+    const data = {
+      items: [{ name: 'First' }, { name: 'Second' }],
+    };
+
+    const result = await interpolateXlsx({ template, data });
+    const ws = await loadWorksheetFromResult(result, 'Sheet1');
+
+    // Row 1
+    expect(ws.getCell('A1').value).toBe(true);
+    expect(ws.getCell('B1').value).toBe(false);
+    expect(ws.getCell('C1').value).toBe(2);
+
+    // Row 2
+    expect(ws.getCell('A2').value).toBe(false);
+    expect(ws.getCell('B2').value).toBe(true);
+    expect(ws.getCell('C2').value).toBe(2);
+  });
+
+  it('should support {{array.length}} as it is a property of the array', async () => {
+    const template = await buildTemplateBuffer((wb) => {
+      const ws = wb.addWorksheet('Sheet1');
+      ws.getCell('A1').value = 'Total items: {{items.length}}';
+    });
+
+    const data = {
+      items: [1, 2, 3],
+    };
+
+    const result = await interpolateXlsx({ template, data });
+    const ws = await loadWorksheetFromResult(result, 'Sheet1');
+
+    expect(ws.getCell('A1').value).toBe('Total items: 3');
+  });
+
   it('should combine primitive value and index in one row', async () => {
     const template = await buildTemplateBuffer((wb) => {
       const ws = wb.addWorksheet('Sheet1');
