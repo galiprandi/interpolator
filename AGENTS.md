@@ -28,6 +28,8 @@ Agents should assume:
 ## Key Features
 
 - **Declarative Template Syntax**: Use `{{key}}` for single-value interpolation and `[[array.key]]` for repeating rows based on arrays.
+- **Smart Type Preservation**: Automatically preserves original data types (Number, Date, Boolean) when a cell contains only a single marker.
+- **Worksheet Name Interpolation**: Use `{{key}}` in worksheet names to generate dynamic sheet titles.
 - **Preserves Excel Formatting**: Keeps fonts, colors, borders, merges, and formulas from the original template when expanding rows.
 - **Conditional Rendering**: Automatically removes rows if the corresponding array is empty.
 - **Safe Missing Key Handling**: Leaves markers untouched if a data key is missing, allowing for easy debugging.
@@ -103,6 +105,7 @@ After interpolation with the data above, the result would be:
 ### 1. Single Value Interpolation: `{{key}}`
 
 - Used for static values that do not change per row.
+- **Type Preservation**: If the cell contains *only* the `{{key}}` marker, the resulting cell will have the same type as the data (e.g., Number, Date, Boolean).
 - Supports nested paths: `{{user.profile.email}}`.
 - If the key is missing, the marker remains in the cell as-is (e.g., `{{missing.key}}`).
 - If the value is `null` or `undefined`, the cell becomes empty (`""`).
@@ -110,10 +113,11 @@ After interpolation with the data above, the result would be:
 ### 2. Array-Based Row Repetition: `[[array.key]]` or `[[array]]`
 
 - Used inside a row to indicate that the entire row should be repeated for each item in the `array`.
+- **Type Preservation**: If a cell contains *only* a `[[ ]]` marker, it will preserve the original data type (e.g., Number, Date, Boolean).
 - The array name (`array`) must exist at the root of the data object and must be an array.
 - Each occurrence of `[[array.key]]` in the row is replaced with the value of `item.key` from the current iteration.
 - `[[array]]` (without property) is replaced by the item itself (useful for primitive arrays).
-- Special index markers are supported: `[[array.$index]]` (0-based), `[[array.$index1]]` or `[[array.$number]]` (1-based).
+- Special index markers are supported: `[[array.$index]]` (0-based), `[[array.$index1]]` or `[[array.$number]]` (1-based). These are returned as Numbers.
 - If the array is empty (`[]`), the row is removed from the output.
 - If `array` does not exist in the data, markers are left as-is.
 - If an item in the array does not have the specified key, the marker remains (e.g., `[[items.missing]]`).
