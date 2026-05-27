@@ -1,4 +1,5 @@
 import ExcelJS from 'exceljs';
+import { resolvePath } from '@interpolator/core';
 
 const { Workbook } = ExcelJS;
 
@@ -13,6 +14,13 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
   await workbook.xlsx.load(template as any);
 
   for (const worksheet of workbook.worksheets) {
+    // Interpolate worksheet name
+    worksheet.name = worksheet.name.replace(/\{\{\s*([^\}]+)\s*\}\}/g, (_, path) => {
+      const { found, value: resolved } = resolvePath(data, path);
+      if (!found) return `{{${path}}}`;
+      return resolved == null ? '' : String(resolved);
+    });
+
     const rowsToExpand: { rowNumber: number; arrayKey: string }[] = [];
 
     worksheet.eachRow((row, rowNumber) => {
@@ -82,37 +90,70 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
           if (value && typeof value === 'object' && 'formula' in value) {
             const originalFormula = (value as any).formula as string;
             const adjustedFormula = adjustFormulaForRow(originalFormula, rowNumber, newRowNumber);
-            newCell.value = {
+            value = {
               ...(value as any),
               formula: adjustedFormula
             };
             // Styles & validation will be copied below; skip marker interpolation for formulas
           } else if (typeof value === 'string') {
-            // Array interpolation: [[array.key]] or [[array]]
-            value = value.replace(/\[\[\s*([^\].\s]+)(?:\.([^\]\s]+))?\s*\]\]/g, (_, arrKey, propPath) => {
-              if (arrKey !== arrayKey) return propPath ? `[[${arrKey}.${propPath}]]` : `[[${arrKey}]]`;
-
-              if (!propPath) {
-                return item == null ? '' : String(item);
+            // Check if it's a single [[ ]] marker to preserve type
+            const singleArMatch = value.match(/^\[\[\s*([^\].\s]+)(?:\.([^\]\s]+))?\s*\]\]$/);
+            if (singleArMatch) {
+              const [, arrKey, propPath] = singleArMatch;
+              if (arrKey === arrayKey) {
+                if (!propPath) {
+                  value = item === undefined ? value : item;
+                } else if (propPath === '$index') {
+                  value = i;
+                } else if (propPath === '$index1' || propPath === '$number') {
+                  value = i + 1;
+                } else {
+                  const { found, value: resolved } = resolvePath(item, propPath);
+                  value = found ? resolved : value;
+                }
               }
+            }
 
-              if (propPath === '$index') return String(i);
-              if (propPath === '$index1' || propPath === '$number') return String(i + 1);
+            // If it was not a single array marker, or it's still a string, process all markers
+            if (typeof value === 'string') {
+              // Check if it's a single {{ }} marker to preserve type
+              const singleRootMatch = value.match(/^\{\{\s*([^\}]+)\s*\}\}$/);
+              if (singleRootMatch) {
+                const { found, value: resolved } = resolvePath(data, singleRootMatch[1]);
+                if (found) {
+                  value = resolved;
+                }
+              }
+            }
 
-              const { found, value: resolved } = resolvePath(item, propPath);
-              if (!found) return `[[${arrKey}.${propPath}]]`;
-              return resolved == null ? '' : String(resolved);
-            });
+            // Final string interpolation for remaining cases
+            if (typeof value === 'string') {
+              // Array interpolation: [[array.key]] or [[array]]
+              value = value.replace(/\[\[\s*([^\].\s]+)(?:\.([^\]\s]+))?\s*\]\]/g, (_, arrKey, propPath) => {
+                if (arrKey !== arrayKey) return propPath ? `[[${arrKey}.${propPath}]]` : `[[${arrKey}]]`;
 
-            // Root-level interpolation: {{key}}
-            value = value.replace(/\{\{\s*([^\}]+)\s*\}\}/g, (_, path) => {
-              const { found, value: resolved } = resolvePath(data, path);
-              if (!found) return `{{${path}}}`;
-              return resolved == null ? '' : String(resolved);
-            });
+                if (!propPath) {
+                  return item == null ? '' : String(item);
+                }
+
+                if (propPath === '$index') return String(i);
+                if (propPath === '$index1' || propPath === '$number') return String(i + 1);
+
+                const { found, value: resolved } = resolvePath(item, propPath);
+                if (!found) return `[[${arrKey}.${propPath}]]`;
+                return resolved == null ? '' : String(resolved);
+              });
+
+              // Root-level interpolation: {{key}}
+              value = value.replace(/\{\{\s*([^\}]+)\s*\}\}/g, (_, path) => {
+                const { found, value: resolved } = resolvePath(data, path);
+                if (!found) return `{{${path}}}`;
+                return resolved == null ? '' : String(resolved);
+              });
+            }
           }
 
-          if (typeof value !== 'undefined' && typeof value !== 'object') {
+          if (value !== undefined) {
             newCell.value = value;
           }
           // Preserve basic styles; merges will be handled separately in a later step
@@ -148,13 +189,24 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
       row.eachCell((cell) => {
         if (typeof cell.value !== 'string') return;
 
-        let value = cell.value;
+        let value: any = cell.value;
 
-        value = value.replace(/\{\{\s*([^\}]+)\s*\}\}/g, (_, path) => {
-          const { found, value: resolved } = resolvePath(data, path);
-          if (!found) return `{{${path}}}`;
-          return resolved == null ? '' : String(resolved);
-        });
+        // Check if it's a single {{ }} marker to preserve type
+        const singleRootMatch = value.match(/^\{\{\s*([^\}]+)\s*\}\}$/);
+        if (singleRootMatch) {
+          const { found, value: resolved } = resolvePath(data, singleRootMatch[1]);
+          if (found) {
+            value = resolved;
+          }
+        }
+
+        if (typeof value === 'string') {
+          value = value.replace(/\{\{\s*([^\}]+)\s*\}\}/g, (_, path) => {
+            const { found, value: resolved } = resolvePath(data, path);
+            if (!found) return `{{${path}}}`;
+            return resolved == null ? '' : String(resolved);
+          });
+        }
 
         cell.value = value;
       });
@@ -163,24 +215,6 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
 
   const result = await workbook.xlsx.writeBuffer();
   return result as any as Buffer;
-}
-
-// Reutilizar la función de core
-function resolvePath(obj: any, path: string): { found: boolean; value: any } {
-  const keys = path.split('.');
-  let current = obj;
-
-  for (const key of keys) {
-    if (current == null || typeof current !== 'object') {
-      return { found: false, value: undefined };
-    }
-    if (!(key in current)) {
-      return { found: false, value: undefined };
-    }
-    current = current[key];
-  }
-
-  return { found: true, value: current };
 }
 
 // Adjust row-relative references in formulas when cloning rows.

@@ -376,15 +376,15 @@ describe('interpolateXlsx - functional', () => {
     const ws = await loadWorksheetFromResult(result, 'Sheet1');
 
     // Row 1
-    expect(ws.getCell('A1').value).toBe('0');
-    expect(ws.getCell('B1').value).toBe('1');
-    expect(ws.getCell('C1').value).toBe('1');
+    expect(ws.getCell('A1').value).toBe(0);
+    expect(ws.getCell('B1').value).toBe(1);
+    expect(ws.getCell('C1').value).toBe(1);
     expect(ws.getCell('D1').value).toBe('First');
 
     // Row 2
-    expect(ws.getCell('A2').value).toBe('1');
-    expect(ws.getCell('B2').value).toBe('2');
-    expect(ws.getCell('C2').value).toBe('2');
+    expect(ws.getCell('A2').value).toBe(1);
+    expect(ws.getCell('B2').value).toBe(2);
+    expect(ws.getCell('C2').value).toBe(2);
     expect(ws.getCell('D2').value).toBe('Second');
   });
 
@@ -403,5 +403,55 @@ describe('interpolateXlsx - functional', () => {
 
     expect(ws.getCell('A1').value).toBe('1. One');
     expect(ws.getCell('A2').value).toBe('2. Two');
+  });
+
+  it('should preserve type (number) for single {{}} markers', async () => {
+    const template = await buildTemplateBuffer((wb) => {
+      const ws = wb.addWorksheet('Sheet1');
+      ws.getCell('A1').value = '{{amount}}';
+    });
+
+    const data = { amount: 123.45 };
+
+    const result = await interpolateXlsx({ template, data });
+    const ws = await loadWorksheetFromResult(result, 'Sheet1');
+
+    expect(ws.getCell('A1').value).toBe(123.45);
+    expect(typeof ws.getCell('A1').value).toBe('number');
+  });
+
+  it('should preserve Date values in expanded rows', async () => {
+    const now = new Date();
+    // Normalize date to avoid ms differences if any during serialization
+    now.setMilliseconds(0);
+
+    const template = await buildTemplateBuffer((wb) => {
+      const ws = wb.addWorksheet('Sheet1');
+      ws.getCell('A1').value = 'Date';
+      ws.getCell('A2').value = now;
+      ws.getCell('B2').value = '[[items.id]]';
+    });
+
+    const data = { items: [{ id: 1 }] };
+    const result = await interpolateXlsx({ template, data });
+    const ws = await loadWorksheetFromResult(result, 'Sheet1');
+
+    const cellValue = ws.getCell('A2').value;
+    expect(cellValue).toBeInstanceOf(Date);
+    expect((cellValue as Date).getTime()).toBe(now.getTime());
+  });
+
+  it('should interpolate sheet names', async () => {
+    const template = await buildTemplateBuffer((wb) => {
+      wb.addWorksheet('Report {{year}}');
+    });
+
+    const data = { year: 2024 };
+    const result = await interpolateXlsx({ template, data });
+    const wb = new Workbook();
+    await wb.xlsx.load(result as any);
+
+    expect(wb.getWorksheet('Report 2024')).toBeDefined();
+    expect(wb.getWorksheet('Report {{year}}')).toBeUndefined();
   });
 });
