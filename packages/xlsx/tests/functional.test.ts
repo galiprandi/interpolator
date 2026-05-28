@@ -496,4 +496,30 @@ describe('interpolateXlsx - functional', () => {
     expect(wb.getWorksheet('Report 2024')).toBeDefined();
     expect(wb.getWorksheet('Report {{year}}')).toBeUndefined();
   });
+
+  it('should support $even and $odd metadata markers', async () => {
+    const template = await buildTemplateBuffer((wb) => {
+      const ws = wb.addWorksheet('Sheet1');
+      ws.getCell('A1').value = '[[items.$even]]';
+      ws.getCell('B1').value = '[[items.$odd]]';
+      ws.getCell('C1').value = 'Is even: [[items.$even]]';
+    });
+
+    const data = {
+      items: [{ name: 'First' }, { name: 'Second' }],
+    };
+
+    const result = await interpolateXlsx({ template, data });
+    const ws = await loadWorksheetFromResult(result, 'Sheet1');
+
+    // Row 1 (Index 0, Number 1 - Odd)
+    expect(ws.getCell('A1').value).toBe(false);
+    expect(ws.getCell('B1').value).toBe(true);
+    expect(ws.getCell('C1').value).toBe('Is even: false');
+
+    // Row 2 (Index 1, Number 2 - Even)
+    expect(ws.getCell('A2').value).toBe(true);
+    expect(ws.getCell('B2').value).toBe(false);
+    expect(ws.getCell('C2').value).toBe('Is even: true');
+  });
 });

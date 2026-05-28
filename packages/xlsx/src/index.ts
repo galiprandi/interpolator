@@ -113,6 +113,10 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
                   value = i === array.length - 1;
                 } else if (propPath === '$length') {
                   value = array.length;
+                } else if (propPath === '$even') {
+                  value = (i + 1) % 2 === 0;
+                } else if (propPath === '$odd') {
+                  value = (i + 1) % 2 !== 0;
                 } else {
                   const { found, value: resolved } = resolvePath(item, propPath);
                   value = found ? resolved : value;
@@ -147,6 +151,8 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
                 if (propPath === '$first') return String(i === 0);
                 if (propPath === '$last') return String(i === array.length - 1);
                 if (propPath === '$length') return String(array.length);
+                if (propPath === '$even') return String((i + 1) % 2 === 0);
+                if (propPath === '$odd') return String((i + 1) % 2 !== 0);
 
                 const { found, value: resolved } = resolvePath(item, propPath);
                 if (!found) return `[[${arrKey}.${propPath}]]`;

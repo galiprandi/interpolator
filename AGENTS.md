@@ -123,6 +123,8 @@ After interpolation with the data above, the result would be:
   - `[[array.$first]]`: `true` for the first item, `false` otherwise (Boolean).
   - `[[array.$last]]`: `true` for the last item, `false` otherwise (Boolean).
   - `[[array.$length]]`: Total number of items in the array (Number).
+  - `[[array.$even]]`: `true` for even-numbered rows (1-based), `false` otherwise (Boolean).
+  - `[[array.$odd]]`: `true` for odd-numbered rows (1-based), `false` otherwise (Boolean).
 - If the array is empty (`[]`), the row is removed from the output.
 - If `array` does not exist in the data, markers are left as-is.
 - If an item in the array does not have the specified key, the marker remains (e.g., `[[items.missing]]`).
