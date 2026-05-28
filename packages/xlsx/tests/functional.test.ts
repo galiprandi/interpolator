@@ -522,4 +522,78 @@ describe('interpolateXlsx - functional', () => {
     expect(ws.getCell('B2').value).toBe(false);
     expect(ws.getCell('C2').value).toBe('Is even: true');
   });
+
+  describe('Excel context markers', () => {
+    it('should support {{$now}} for current date', async () => {
+      const template = await buildTemplateBuffer((wb) => {
+        const ws = wb.addWorksheet('Sheet1');
+        ws.getCell('A1').value = '{{$now}}';
+      });
+
+      const result = await interpolateXlsx({ template, data: {} });
+      const ws = await loadWorksheetFromResult(result, 'Sheet1');
+
+      const value = ws.getCell('A1').value;
+      expect(value).toBeInstanceOf(Date);
+      // It should be roughly now
+      expect(Math.abs((value as Date).getTime() - Date.now())).toBeLessThan(10000);
+    });
+
+    it('should support {{$sheet}}, {{$row}}, {{$col}} root markers', async () => {
+      const template = await buildTemplateBuffer((wb) => {
+        const ws = wb.addWorksheet('MySheet');
+        ws.getCell('A1').value = 'Sheet: {{$sheet}}';
+        ws.getCell('B2').value = '{{$row}}:{{$col}}';
+      });
+
+      const result = await interpolateXlsx({ template, data: {} });
+      const ws = await loadWorksheetFromResult(result, 'MySheet');
+
+      expect(ws.getCell('A1').value).toBe('Sheet: MySheet');
+      expect(ws.getCell('B2').value).toBe('2:2');
+    });
+
+    it('should support array expansion markers [[$row]], [[$col]], [[$index0]]', async () => {
+      const template = await buildTemplateBuffer((wb) => {
+        const ws = wb.addWorksheet('Sheet1');
+        ws.getCell('A1').value = '[[items.$index0]]';
+        ws.getCell('B1').value = '[[items.$row]]';
+        ws.getCell('C1').value = '[[items.$col]]';
+      });
+
+      const data = {
+        items: [{ name: 'A' }, { name: 'B' }],
+      };
+
+      const result = await interpolateXlsx({ template, data });
+      const ws = await loadWorksheetFromResult(result, 'Sheet1');
+
+      // Row 1
+      expect(ws.getCell('A1').value).toBe(0);
+      expect(ws.getCell('B1').value).toBe(1);
+      expect(ws.getCell('C1').value).toBe(3); // C is 3rd column
+
+      // Row 2
+      expect(ws.getCell('A2').value).toBe(1);
+      expect(ws.getCell('B2').value).toBe(2);
+      expect(ws.getCell('C2').value).toBe(3);
+    });
+
+    it('should support $row and $col in root interpolation within expanded rows', async () => {
+      const template = await buildTemplateBuffer((wb) => {
+        const ws = wb.addWorksheet('Sheet1');
+        ws.getCell('A1').value = 'Row {{ $row }} Col {{ $col }} for [[ items.name ]]';
+      });
+
+      const data = {
+        items: [{ name: 'A' }, { name: 'B' }],
+      };
+
+      const result = await interpolateXlsx({ template, data });
+      const ws = await loadWorksheetFromResult(result, 'Sheet1');
+
+      expect(ws.getCell('A1').value).toBe('Row 1 Col 1 for A');
+      expect(ws.getCell('A2').value).toBe('Row 2 Col 1 for B');
+    });
+  });
 });
