@@ -15,3 +15,7 @@
 ## 2025-05-18 - [Styling and Conditional Markers]
 **Learning:** Adding `$even` and `$odd` markers makes it trivial for users to implement zebra-striping or alternating layouts in Excel without any preprocessing on the data side.
 **Pattern:** Always think of how metadata markers can replace manual data enrichment. If a value can be derived from the iteration context (like parity), it's a candidate for a metadata marker.
+
+## 2024-05-22 - Excel Context Markers
+**Learning:** Contextual information (, , , ) is frequently requested in document templates but often requires the user to manually enrich their data object. Providing these as built-in markers dramatically simplifies report generation templates.
+**Pattern:** Abstract path resolution into a context-aware helper that wraps the standard data resolution. This allows for clean injection of environment/runtime variables without polluting the user's data object.

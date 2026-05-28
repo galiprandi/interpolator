@@ -8,15 +8,37 @@ export interface InterpolateXlsxOptions {
   data: Record<string, any>;
 }
 
+/**
+ * Resolves a path from the data object or from the special Excel context markers.
+ */
+function resolveWithContext(
+  path: string,
+  data: any,
+  ctx: { now: Date; sheet?: string; row?: number; col?: number },
+): { found: boolean; value: any } {
+  const trimmedPath = path.trim();
+  if (trimmedPath === '$now') return { found: true, value: ctx.now };
+  if (trimmedPath === '$sheet') return { found: true, value: ctx.sheet };
+  if (trimmedPath === '$row') return { found: true, value: ctx.row };
+  if (trimmedPath === '$col') return { found: true, value: ctx.col };
+
+  return resolvePath(data, trimmedPath);
+}
+
 export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<Buffer> {
   const { template, data } = options;
   const workbook = new Workbook();
   await workbook.xlsx.load(template as any);
 
+  const now = new Date();
+
   for (const worksheet of workbook.worksheets) {
     // Interpolate worksheet name
     worksheet.name = worksheet.name.replace(/\{\{\s*([^\}]+)\s*\}\}/g, (_, path) => {
-      const { found, value: resolved } = resolvePath(data, path);
+      const { found, value: resolved } = resolveWithContext(path, data, {
+        now,
+        sheet: worksheet.name,
+      });
       if (!found) return `{{${path}}}`;
       return resolved == null ? '' : String(resolved);
     });
@@ -103,7 +125,7 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
               if (arrKey === arrayKey) {
                 if (!propPath) {
                   value = item === undefined ? value : item;
-                } else if (propPath === '$index') {
+                } else if (propPath === '$index' || propPath === '$index0') {
                   value = i;
                 } else if (propPath === '$index1' || propPath === '$number') {
                   value = i + 1;
@@ -117,6 +139,10 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
                   value = (i + 1) % 2 === 0;
                 } else if (propPath === '$odd') {
                   value = (i + 1) % 2 !== 0;
+                } else if (propPath === '$row') {
+                  value = newRowNumber;
+                } else if (propPath === '$col') {
+                  value = colNumber;
                 } else {
                   const { found, value: resolved } = resolvePath(item, propPath);
                   value = found ? resolved : value;
@@ -129,7 +155,12 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
               // Check if it's a single {{ }} marker to preserve type
               const singleRootMatch = value.match(/^\{\{\s*([^\}]+)\s*\}\}$/);
               if (singleRootMatch) {
-                const { found, value: resolved } = resolvePath(data, singleRootMatch[1]);
+                const { found, value: resolved } = resolveWithContext(singleRootMatch[1], data, {
+                  now,
+                  sheet: worksheet.name,
+                  row: newRowNumber,
+                  col: colNumber,
+                });
                 if (found) {
                   value = resolved;
                 }
@@ -146,13 +177,15 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
                   return item == null ? '' : String(item);
                 }
 
-                if (propPath === '$index') return String(i);
+                if (propPath === '$index' || propPath === '$index0') return String(i);
                 if (propPath === '$index1' || propPath === '$number') return String(i + 1);
                 if (propPath === '$first') return String(i === 0);
                 if (propPath === '$last') return String(i === array.length - 1);
                 if (propPath === '$length') return String(array.length);
                 if (propPath === '$even') return String((i + 1) % 2 === 0);
                 if (propPath === '$odd') return String((i + 1) % 2 !== 0);
+                if (propPath === '$row') return String(newRowNumber);
+                if (propPath === '$col') return String(colNumber);
 
                 const { found, value: resolved } = resolvePath(item, propPath);
                 if (!found) return `[[${arrKey}.${propPath}]]`;
@@ -161,7 +194,12 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
 
               // Root-level interpolation: {{key}}
               value = value.replace(/\{\{\s*([^\}]+)\s*\}\}/g, (_, path) => {
-                const { found, value: resolved } = resolvePath(data, path);
+                const { found, value: resolved } = resolveWithContext(path, data, {
+                  now,
+                  sheet: worksheet.name,
+                  row: newRowNumber,
+                  col: colNumber,
+                });
                 if (!found) return `{{${path}}}`;
                 return resolved == null ? '' : String(resolved);
               });
@@ -200,8 +238,8 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
     }
 
     // Second pass: interpolate root-level {{ }} markers in all cells
-    worksheet.eachRow((row) => {
-      row.eachCell((cell) => {
+    worksheet.eachRow((row, rowNumber) => {
+      row.eachCell((cell, colNumber) => {
         if (typeof cell.value !== 'string') return;
 
         let value: any = cell.value;
@@ -209,7 +247,12 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
         // Check if it's a single {{ }} marker to preserve type
         const singleRootMatch = value.match(/^\{\{\s*([^\}]+)\s*\}\}$/);
         if (singleRootMatch) {
-          const { found, value: resolved } = resolvePath(data, singleRootMatch[1]);
+          const { found, value: resolved } = resolveWithContext(singleRootMatch[1], data, {
+            now,
+            sheet: worksheet.name,
+            row: rowNumber,
+            col: colNumber,
+          });
           if (found) {
             value = resolved;
           }
@@ -217,7 +260,12 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
 
         if (typeof value === 'string') {
           value = value.replace(/\{\{\s*([^\}]+)\s*\}\}/g, (_, path) => {
-            const { found, value: resolved } = resolvePath(data, path);
+            const { found, value: resolved } = resolveWithContext(path, data, {
+              now,
+              sheet: worksheet.name,
+              row: rowNumber,
+              col: colNumber,
+            });
             if (!found) return `{{${path}}}`;
             return resolved == null ? '' : String(resolved);
           });
