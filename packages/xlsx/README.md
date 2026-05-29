@@ -111,10 +111,28 @@ You can use these special property paths within an array context to include indi
 
 - `[[array.$index]]`: The 0-based index of the current item (0, 1, 2, ...).
 - `[[array.$index1]]` or `[[array.$number]]`: The 1-based index of the current item (1, 2, 3, ...).
-- `[[array.$first]]` / `[[array.$last]]`: Boolean flags (`true`/`false`) for the first and last items.
+- `[[array.$first]]` or `[[array.$isFirst]]`: Boolean flag (`true`/`false`) for the first item.
+- `[[array.$last]]` or `[[array.$isLast]]`: Boolean flag (`true`/`false`) for the last item.
+- `[[array.$even]]` or `[[array.$isEven]]`: Boolean flag (`true`/`false`) for even items (1-indexed).
+- `[[array.$odd]]` or `[[array.$isOdd]]`: Boolean flag (`true`/`false`) for odd items (1-indexed).
 - `[[array.$length]]`: The total number of items in the array.
+- `[[array.$cell]]`: The current cell address (e.g. A2, B3).
+- `[[array.$colLetter]]`: The current column letter (e.g. A, B, AA).
+- `[[array.$row]]`: The current row number.
+- `[[array.$col]]`: The current column number.
 
 Example: `[[items.$number]] of [[items.$length]]: [[items.name]]` will produce "1 of 10: First Item", etc.
+
+### Built-in context markers
+
+These markers can be used both in `{{}}` and `[[]]` contexts:
+
+- `{{$now}}`: Current date and time.
+- `{{$sheet}}`: Current worksheet name.
+- `{{$row}}`: Current row number.
+- `{{$col}}`: Current column number.
+- `{{$colLetter}}`: Current column letter (e.g. A, B, Z, AA).
+- `{{$cell}}`: Current cell address (e.g. A1, B2).
 
 ## Formatting, formulas and merges
 

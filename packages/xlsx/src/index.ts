@@ -21,6 +21,13 @@ function resolveWithContext(
   if (trimmedPath === '$sheet') return { found: true, value: ctx.sheet };
   if (trimmedPath === '$row') return { found: true, value: ctx.row };
   if (trimmedPath === '$col') return { found: true, value: ctx.col };
+  if (trimmedPath === '$colLetter') return { found: true, value: ctx.col ? getColLetter(ctx.col) : undefined };
+  if (trimmedPath === '$cell') {
+    return {
+      found: true,
+      value: ctx.row && ctx.col ? `${getColLetter(ctx.col)}${ctx.row}` : undefined
+    };
+  }
 
   return resolvePath(data, trimmedPath);
 }
@@ -129,20 +136,24 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
                   value = i;
                 } else if (propPath === '$index1' || propPath === '$number') {
                   value = i + 1;
-                } else if (propPath === '$first') {
+                } else if (propPath === '$first' || propPath === '$isFirst') {
                   value = i === 0;
-                } else if (propPath === '$last') {
+                } else if (propPath === '$last' || propPath === '$isLast') {
                   value = i === array.length - 1;
                 } else if (propPath === '$length') {
                   value = array.length;
-                } else if (propPath === '$even') {
+                } else if (propPath === '$even' || propPath === '$isEven') {
                   value = (i + 1) % 2 === 0;
-                } else if (propPath === '$odd') {
+                } else if (propPath === '$odd' || propPath === '$isOdd') {
                   value = (i + 1) % 2 !== 0;
                 } else if (propPath === '$row') {
                   value = newRowNumber;
                 } else if (propPath === '$col') {
                   value = colNumber;
+                } else if (propPath === '$colLetter') {
+                  value = getColLetter(colNumber);
+                } else if (propPath === '$cell') {
+                  value = `${getColLetter(colNumber)}${newRowNumber}`;
                 } else {
                   const { found, value: resolved } = resolvePath(item, propPath);
                   value = found ? resolved : value;
@@ -179,13 +190,15 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
 
                 if (propPath === '$index' || propPath === '$index0') return String(i);
                 if (propPath === '$index1' || propPath === '$number') return String(i + 1);
-                if (propPath === '$first') return String(i === 0);
-                if (propPath === '$last') return String(i === array.length - 1);
+                if (propPath === '$first' || propPath === '$isFirst') return String(i === 0);
+                if (propPath === '$last' || propPath === '$isLast') return String(i === array.length - 1);
                 if (propPath === '$length') return String(array.length);
-                if (propPath === '$even') return String((i + 1) % 2 === 0);
-                if (propPath === '$odd') return String((i + 1) % 2 !== 0);
+                if (propPath === '$even' || propPath === '$isEven') return String((i + 1) % 2 === 0);
+                if (propPath === '$odd' || propPath === '$isOdd') return String((i + 1) % 2 !== 0);
                 if (propPath === '$row') return String(newRowNumber);
                 if (propPath === '$col') return String(colNumber);
+                if (propPath === '$colLetter') return getColLetter(colNumber);
+                if (propPath === '$cell') return `${getColLetter(colNumber)}${newRowNumber}`;
 
                 const { found, value: resolved } = resolvePath(item, propPath);
                 if (!found) return `[[${arrKey}.${propPath}]]`;
@@ -336,4 +349,15 @@ function parseCellRef(ref: string): { col: string; row: number } | null {
   const row = Number(rowStr);
   if (Number.isNaN(row)) return null;
   return { col, row };
+}
+
+function getColLetter(col: number): string {
+  let letter = '';
+  let n = col;
+  while (n > 0) {
+    const remainder = (n - 1) % 26;
+    letter = String.fromCharCode(65 + remainder) + letter;
+    n = Math.floor((n - 1) / 26);
+  }
+  return letter;
 }
