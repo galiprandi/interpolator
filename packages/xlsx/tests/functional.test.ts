@@ -595,5 +595,58 @@ describe('interpolateXlsx - functional', () => {
       expect(ws.getCell('A1').value).toBe('Row 1 Col 1 for A');
       expect(ws.getCell('A2').value).toBe('Row 2 Col 1 for B');
     });
+
+    it('should support $colLetter and $cell markers', async () => {
+      const template = await buildTemplateBuffer((wb) => {
+        const ws = wb.addWorksheet('Sheet1');
+        ws.getCell('A1').value = 'Col: {{$colLetter}} Cell: {{$cell}}';
+        ws.getCell('Z1').value = '{{$colLetter}}';
+        ws.getCell('AA1').value = '{{$colLetter}}';
+        ws.getCell('A2').value = '[[items.name]] at [[items.$cell]] ([[items.$colLetter]])';
+      });
+
+      const data = {
+        items: [{ name: 'A' }, { name: 'B' }],
+      };
+
+      const result = await interpolateXlsx({ template, data });
+      const ws = await loadWorksheetFromResult(result, 'Sheet1');
+
+      expect(ws.getCell('A1').value).toBe('Col: A Cell: A1');
+      expect(ws.getCell('Z1').value).toBe('Z');
+      expect(ws.getCell('AA1').value).toBe('AA');
+
+      expect(ws.getCell('A2').value).toBe('A at A2 (A)');
+      expect(ws.getCell('A3').value).toBe('B at A3 (A)');
+    });
+
+    it('should support boolean aliases $isFirst, $isLast, $isEven, $isOdd', async () => {
+      const template = await buildTemplateBuffer((wb) => {
+        const ws = wb.addWorksheet('Sheet1');
+        ws.getCell('A1').value = '[[items.$isFirst]]';
+        ws.getCell('B1').value = '[[items.$isLast]]';
+        ws.getCell('C1').value = '[[items.$isEven]]';
+        ws.getCell('D1').value = '[[items.$isOdd]]';
+      });
+
+      const data = {
+        items: [{ name: 'A' }, { name: 'B' }],
+      };
+
+      const result = await interpolateXlsx({ template, data });
+      const ws = await loadWorksheetFromResult(result, 'Sheet1');
+
+      // Row 1
+      expect(ws.getCell('A1').value).toBe(true);
+      expect(ws.getCell('B1').value).toBe(false);
+      expect(ws.getCell('C1').value).toBe(false);
+      expect(ws.getCell('D1').value).toBe(true);
+
+      // Row 2
+      expect(ws.getCell('A2').value).toBe(false);
+      expect(ws.getCell('B2').value).toBe(true);
+      expect(ws.getCell('C2').value).toBe(true);
+      expect(ws.getCell('D2').value).toBe(false);
+    });
   });
 });

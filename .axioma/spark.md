@@ -16,6 +16,10 @@
 **Learning:** Adding `$even` and `$odd` markers makes it trivial for users to implement zebra-striping or alternating layouts in Excel without any preprocessing on the data side.
 **Pattern:** Always think of how metadata markers can replace manual data enrichment. If a value can be derived from the iteration context (like parity), it's a candidate for a metadata marker.
 
+## 2025-05-19 - [Excel Coordinate Markers]
+**Learning:** Providing markers that translate numeric indices into Excel coordinates (like `$colLetter` or `$cell`) bridges the gap between structured data and document layout. This allows users to create more dynamic references or labels within the template without needing to pre-calculate Excel-specific addresses in their data source.
+**Pattern:** Implement a robust utility for coordinate translation (e.g., column index to letter) and expose it through both global and iteration contexts to ensure consistency.
+
 ## 2024-05-22 - Excel Context Markers
 **Learning:** Contextual information (, , , ) is frequently requested in document templates but often requires the user to manually enrich their data object. Providing these as built-in markers dramatically simplifies report generation templates.
 **Pattern:** Abstract path resolution into a context-aware helper that wraps the standard data resolution. This allows for clean injection of environment/runtime variables without polluting the user's data object.

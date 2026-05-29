@@ -92,9 +92,11 @@ Create a beautiful Excel invoice with your company branding. Use `{{client}}` fo
 Generate a single workbook where each sheet is named after a specific region or department using `{{department.name}}` in the tab title.
 
 ### Case 3: Data Exports with Counters
-Need a numbered list? Use the special index markers:
+Need a numbered list or cell references? Use the special metadata markers:
 - `[[items.$index]]`: 0, 1, 2...
 - `[[items.$number]]` or `[[items.$index1]]`: 1, 2, 3...
+- `{{$cell}}` or `[[items.$cell]]`: A1, B2, etc. (Current cell address)
+- `{{$colLetter}}` or `[[items.$colLetter]]`: A, B, AA, etc. (Current column letter)
 
 Example cell: `[[items.$number]]. [[items.name]]` produces "1. My Item".
 
