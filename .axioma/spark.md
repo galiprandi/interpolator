@@ -23,3 +23,7 @@
 ## 2024-05-22 - Excel Context Markers
 **Learning:** Contextual information (, , , ) is frequently requested in document templates but often requires the user to manually enrich their data object. Providing these as built-in markers dramatically simplifies report generation templates.
 **Pattern:** Abstract path resolution into a context-aware helper that wraps the standard data resolution. This allows for clean injection of environment/runtime variables without polluting the user's data object.
+
+## 2026-05-29 - [Sheet Metadata and Root Context Consistency]
+**Learning:** Exposing workbook-level metadata (like sheet count and position) allows for more professional, context-aware reports (e.g., "Sheet 1 of 5"). Aligning root context markers with iteration markers (like parity) creates a more predictable API for users.
+**Pattern:** Ensure all available document hierarchy metadata is injectable into the resolution context. Consistency between global markers and loop-local markers reduces cognitive load for template authors.

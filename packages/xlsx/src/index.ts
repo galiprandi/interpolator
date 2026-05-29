@@ -14,18 +14,44 @@ export interface InterpolateXlsxOptions {
 function resolveWithContext(
   path: string,
   data: any,
-  ctx: { now: Date; sheet?: string; row?: number; col?: number },
+  ctx: {
+    now: Date;
+    sheet?: string;
+    sheetIndex?: number;
+    totalSheets?: number;
+    row?: number;
+    col?: number;
+  },
 ): { found: boolean; value: any } {
   const trimmedPath = path.trim();
   if (trimmedPath === '$now') return { found: true, value: ctx.now };
-  if (trimmedPath === '$sheet') return { found: true, value: ctx.sheet };
+  if (trimmedPath === '$sheet' || trimmedPath === '$sheetName') return { found: true, value: ctx.sheet };
+  if (trimmedPath === '$sheetIndex') return { found: true, value: ctx.sheetIndex };
+  if (trimmedPath === '$sheetNumber')
+    return { found: true, value: ctx.sheetIndex !== undefined ? ctx.sheetIndex + 1 : undefined };
+  if (trimmedPath === '$totalSheets') return { found: true, value: ctx.totalSheets };
+  if (trimmedPath === '$isFirstSheet' || trimmedPath === '$isFirst')
+    return { found: true, value: ctx.sheetIndex === 0 };
+  if (trimmedPath === '$isLastSheet' || trimmedPath === '$isLast') {
+    return {
+      found: true,
+      value:
+        ctx.sheetIndex !== undefined && ctx.totalSheets !== undefined
+          ? ctx.sheetIndex === ctx.totalSheets - 1
+          : undefined,
+    };
+  }
   if (trimmedPath === '$row') return { found: true, value: ctx.row };
   if (trimmedPath === '$col') return { found: true, value: ctx.col };
+  if (trimmedPath === '$isEven' || trimmedPath === '$even')
+    return { found: true, value: ctx.row !== undefined ? ctx.row % 2 === 0 : undefined };
+  if (trimmedPath === '$isOdd' || trimmedPath === '$odd')
+    return { found: true, value: ctx.row !== undefined ? ctx.row % 2 !== 0 : undefined };
   if (trimmedPath === '$colLetter') return { found: true, value: ctx.col ? getColLetter(ctx.col) : undefined };
   if (trimmedPath === '$cell') {
     return {
       found: true,
-      value: ctx.row && ctx.col ? `${getColLetter(ctx.col)}${ctx.row}` : undefined
+      value: ctx.row && ctx.col ? `${getColLetter(ctx.col)}${ctx.row}` : undefined,
     };
   }
 
@@ -38,17 +64,18 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
   await workbook.xlsx.load(template as any);
 
   const now = new Date();
+  const totalSheets = workbook.worksheets.length;
 
-  for (const worksheet of workbook.worksheets) {
+  for (let sIdx = 0; sIdx < totalSheets; sIdx++) {
+    const worksheet = workbook.worksheets[sIdx];
+    const sheetCtx = { now, sheet: worksheet.name, sheetIndex: sIdx, totalSheets };
     // Interpolate worksheet name
     worksheet.name = worksheet.name.replace(/\{\{\s*([^\}]+)\s*\}\}/g, (_, path) => {
-      const { found, value: resolved } = resolveWithContext(path, data, {
-        now,
-        sheet: worksheet.name,
-      });
+      const { found, value: resolved } = resolveWithContext(path, data, sheetCtx);
       if (!found) return `{{${path}}}`;
       return resolved == null ? '' : String(resolved);
     });
+    sheetCtx.sheet = worksheet.name;
 
     const rowsToExpand: { rowNumber: number; arrayKey: string }[] = [];
 
@@ -167,8 +194,7 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
               const singleRootMatch = value.match(/^\{\{\s*([^\}]+)\s*\}\}$/);
               if (singleRootMatch) {
                 const { found, value: resolved } = resolveWithContext(singleRootMatch[1], data, {
-                  now,
-                  sheet: worksheet.name,
+                  ...sheetCtx,
                   row: newRowNumber,
                   col: colNumber,
                 });
@@ -208,8 +234,7 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
               // Root-level interpolation: {{key}}
               value = value.replace(/\{\{\s*([^\}]+)\s*\}\}/g, (_, path) => {
                 const { found, value: resolved } = resolveWithContext(path, data, {
-                  now,
-                  sheet: worksheet.name,
+                  ...sheetCtx,
                   row: newRowNumber,
                   col: colNumber,
                 });
@@ -261,8 +286,7 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
         const singleRootMatch = value.match(/^\{\{\s*([^\}]+)\s*\}\}$/);
         if (singleRootMatch) {
           const { found, value: resolved } = resolveWithContext(singleRootMatch[1], data, {
-            now,
-            sheet: worksheet.name,
+            ...sheetCtx,
             row: rowNumber,
             col: colNumber,
           });
@@ -274,8 +298,7 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
         if (typeof value === 'string') {
           value = value.replace(/\{\{\s*([^\}]+)\s*\}\}/g, (_, path) => {
             const { found, value: resolved } = resolveWithContext(path, data, {
-              now,
-              sheet: worksheet.name,
+              ...sheetCtx,
               row: rowNumber,
               col: colNumber,
             });
