@@ -620,6 +620,46 @@ describe('interpolateXlsx - functional', () => {
       expect(ws.getCell('A3').value).toBe('B at A3 (A)');
     });
 
+    it('should support sheet metadata markers', async () => {
+      const template = await buildTemplateBuffer((wb) => {
+        const ws1 = wb.addWorksheet('First');
+        ws1.getCell('A1').value = 'Sheet {{$sheetNumber}} of {{$totalSheets}} (Index: {{$sheetIndex}})';
+        ws1.getCell('A2').value = 'First: {{$isFirstSheet}}, Last: {{$isLastSheet}}';
+        ws1.getCell('A3').value = 'Name: {{$sheetName}}';
+
+        const ws2 = wb.addWorksheet('Second');
+        ws2.getCell('A1').value = 'Sheet {{$sheetNumber}} of {{$totalSheets}}';
+        ws2.getCell('A2').value = 'First: {{$isFirstSheet}}, Last: {{$isLastSheet}}';
+      });
+
+      const result = await interpolateXlsx({ template, data: {} });
+      const wb = new Workbook();
+      await wb.xlsx.load(result as any);
+
+      const ws1 = wb.getWorksheet('First')!;
+      expect(ws1.getCell('A1').value).toBe('Sheet 1 of 2 (Index: 0)');
+      expect(ws1.getCell('A2').value).toBe('First: true, Last: false');
+      expect(ws1.getCell('A3').value).toBe('Name: First');
+
+      const ws2 = wb.getWorksheet('Second')!;
+      expect(ws2.getCell('A1').value).toBe('Sheet 2 of 2');
+      expect(ws2.getCell('A2').value).toBe('First: false, Last: true');
+    });
+
+    it('should support root row parity markers $isEven and $isOdd', async () => {
+      const template = await buildTemplateBuffer((wb) => {
+        const ws = wb.addWorksheet('Sheet1');
+        ws.getCell('A1').value = 'Row 1: {{$isEven}}/{{$isOdd}}';
+        ws.getCell('A2').value = 'Row 2: {{$isEven}}/{{$isOdd}}';
+      });
+
+      const result = await interpolateXlsx({ template, data: {} });
+      const ws = await loadWorksheetFromResult(result, 'Sheet1');
+
+      expect(ws.getCell('A1').value).toBe('Row 1: false/true');
+      expect(ws.getCell('A2').value).toBe('Row 2: true/false');
+    });
+
     it('should support boolean aliases $isFirst, $isLast, $isEven, $isOdd', async () => {
       const template = await buildTemplateBuffer((wb) => {
         const ws = wb.addWorksheet('Sheet1');

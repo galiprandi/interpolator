@@ -128,9 +128,16 @@ Example: `[[items.$number]] of [[items.$length]]: [[items.name]]` will produce "
 These markers can be used both in `{{}}` and `[[]]` contexts:
 
 - `{{$now}}`: Current date and time.
-- `{{$sheet}}`: Current worksheet name.
+- `{{$sheet}}` or `{{$sheetName}}`: Current worksheet name.
+- `{{$sheetIndex}}`: 0-based worksheet index.
+- `{{$sheetNumber}}`: 1-based worksheet index.
+- `{{$totalSheets}}`: Total number of sheets in the workbook.
+- `{{$isFirstSheet}}`: `true` for the first sheet.
+- `{{$isLastSheet}}`: `true` for the last sheet.
 - `{{$row}}`: Current row number.
 - `{{$col}}`: Current column number.
+- `{{$isEven}}`: `true` for even-numbered rows.
+- `{{$isOdd}}`: `true` for odd-numbered rows.
 - `{{$colLetter}}`: Current column letter (e.g. A, B, Z, AA).
 - `{{$cell}}`: Current cell address (e.g. A1, B2).
 
