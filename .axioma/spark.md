@@ -27,3 +27,11 @@
 ## 2026-05-29 - [Sheet Metadata and Root Context Consistency]
 **Learning:** Exposing workbook-level metadata (like sheet count and position) allows for more professional, context-aware reports (e.g., "Sheet 1 of 5"). Aligning root context markers with iteration markers (like parity) creates a more predictable API for users.
 **Pattern:** Ensure all available document hierarchy metadata is injectable into the resolution context. Consistency between global markers and loop-local markers reduces cognitive load for template authors.
+
+## 2026-06-05 - [Comprehensive Metadata Markers & Descriptive Aliases]
+**Learning:** Users have different preferences for indexing (0-based vs 1-based) and naming conventions (e.g., $col vs $columnLetter). Providing a broad set of descriptive aliases and date components ($year, $month, $day) makes the template syntax more expressive and reduces the need for external data manipulation.
+**Pattern:** Identify and implement common aliases and derived metadata (like date components or column-based parity) to cater to diverse developer preferences and use cases, ensuring the template feels "native" to both Excel and standard programming models.
+
+## 2026-06-10 - [Roadmap: @interpolator/markdown]
+**Learning:** There is strong interest in extending the interpolation concept to Markdown. This requires handling different structural constraints (like table syntax and indentation) compared to XLSX.
+**Pattern:** Future packages should follow the same declarative syntax ({{}} and [[]]) to ensure a consistent experience across all `@interpolator` formats.

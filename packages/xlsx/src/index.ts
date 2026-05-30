@@ -23,39 +23,85 @@ function resolveWithContext(
     col?: number;
   },
 ): { found: boolean; value: any } {
-  const trimmedPath = path.trim();
-  if (trimmedPath === '$now') return { found: true, value: ctx.now };
-  if (trimmedPath === '$sheet' || trimmedPath === '$sheetName') return { found: true, value: ctx.sheet };
-  if (trimmedPath === '$sheetIndex') return { found: true, value: ctx.sheetIndex };
-  if (trimmedPath === '$sheetNumber')
-    return { found: true, value: ctx.sheetIndex !== undefined ? ctx.sheetIndex + 1 : undefined };
-  if (trimmedPath === '$totalSheets') return { found: true, value: ctx.totalSheets };
-  if (trimmedPath === '$isFirstSheet' || trimmedPath === '$isFirst')
-    return { found: true, value: ctx.sheetIndex === 0 };
-  if (trimmedPath === '$isLastSheet' || trimmedPath === '$isLast') {
-    return {
-      found: true,
-      value:
-        ctx.sheetIndex !== undefined && ctx.totalSheets !== undefined
-          ? ctx.sheetIndex === ctx.totalSheets - 1
-          : undefined,
-    };
-  }
-  if (trimmedPath === '$row') return { found: true, value: ctx.row };
-  if (trimmedPath === '$col') return { found: true, value: ctx.col };
-  if (trimmedPath === '$isEven' || trimmedPath === '$even')
-    return { found: true, value: ctx.row !== undefined ? ctx.row % 2 === 0 : undefined };
-  if (trimmedPath === '$isOdd' || trimmedPath === '$odd')
-    return { found: true, value: ctx.row !== undefined ? ctx.row % 2 !== 0 : undefined };
-  if (trimmedPath === '$colLetter') return { found: true, value: ctx.col ? getColLetter(ctx.col) : undefined };
-  if (trimmedPath === '$cell') {
-    return {
-      found: true,
-      value: ctx.row && ctx.col ? `${getColLetter(ctx.col)}${ctx.row}` : undefined,
-    };
+  const trimmed = path.trim();
+  const parts = trimmed.split(/\s*\|\|\s*/);
+  const mainPath = parts[0];
+  const defaultValue = parts[1];
+
+  let result = resolveInternal(mainPath, data, ctx);
+
+  if ((!result.found || result.value == null) && defaultValue !== undefined) {
+    // Try to resolve default value as a path first, if not found, use as literal
+    const resolvedDefault = resolveInternal(defaultValue, data, ctx);
+    return { found: true, value: resolvedDefault.found ? resolvedDefault.value : defaultValue };
   }
 
-  return resolvePath(data, trimmedPath);
+  return result;
+}
+
+function resolveInternal(
+  trimmedPath: string,
+  data: any,
+  ctx: {
+    now: Date;
+    sheet?: string;
+    sheetIndex?: number;
+    totalSheets?: number;
+    row?: number;
+    col?: number;
+  },
+): { found: boolean; value: any } {
+  switch (trimmedPath) {
+    case '$now': return { found: true, value: ctx.now };
+    case '$year': return { found: true, value: ctx.now.getFullYear() };
+    case '$month': return { found: true, value: ctx.now.getMonth() + 1 };
+    case '$day': return { found: true, value: ctx.now.getDate() };
+    case '$sheet':
+    case '$sheetName': return { found: true, value: ctx.sheet };
+    case '$sheetIndex': return { found: true, value: ctx.sheetIndex };
+    case '$sheetNumber':
+      return { found: true, value: ctx.sheetIndex !== undefined ? ctx.sheetIndex + 1 : undefined };
+    case '$totalSheets': return { found: true, value: ctx.totalSheets };
+    case '$isFirstSheet':
+    case '$isFirst':
+      return { found: true, value: ctx.sheetIndex === 0 };
+    case '$isLastSheet':
+    case '$isLast':
+      return {
+        found: true,
+        value: ctx.sheetIndex !== undefined && ctx.totalSheets !== undefined
+            ? ctx.sheetIndex === ctx.totalSheets - 1
+            : undefined,
+      };
+    case '$row':
+    case '$rowNumber': return { found: true, value: ctx.row };
+    case '$col':
+    case '$colNumber': return { found: true, value: ctx.col };
+    case '$rowIndex': return { found: true, value: ctx.row !== undefined ? ctx.row - 1 : undefined };
+    case '$colIndex': return { found: true, value: ctx.col !== undefined ? ctx.col - 1 : undefined };
+    case '$isEven':
+    case '$even':
+    case '$isEvenRow':
+      return { found: true, value: ctx.row !== undefined ? ctx.row % 2 === 0 : undefined };
+    case '$isOdd':
+    case '$odd':
+    case '$isOddRow':
+      return { found: true, value: ctx.row !== undefined ? ctx.row % 2 !== 0 : undefined };
+    case '$isEvenCol':
+      return { found: true, value: ctx.col !== undefined ? ctx.col % 2 === 0 : undefined };
+    case '$isOddCol':
+      return { found: true, value: ctx.col !== undefined ? ctx.col % 2 !== 0 : undefined };
+    case '$colLetter':
+    case '$columnLetter':
+      return { found: true, value: ctx.col ? getColLetter(ctx.col) : undefined };
+    case '$cell':
+      return {
+        found: true,
+        value: ctx.row && ctx.col ? `${getColLetter(ctx.col)}${ctx.row}` : undefined,
+      };
+    default:
+      return resolvePath(data, trimmedPath);
+  }
 }
 
 export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<Buffer> {
@@ -79,10 +125,10 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
 
     const rowsToExpand: { rowNumber: number; arrayKey: string }[] = [];
 
-    worksheet.eachRow((row, rowNumber) => {
+    worksheet.eachRow({ includeEmpty: true }, (row, rowNumber) => {
       let arrayKey: string | null = null;
 
-      row.eachCell((cell) => {
+      row.eachCell({ includeEmpty: true }, (cell) => {
         if (typeof cell.value === 'string') {
           // Detect if there are array markers
           const arrayMatch = cell.value.match(/\[\[\s*([^\].]+)(?:\.[^\]]+)?\s*\]\]/);
@@ -108,20 +154,31 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
     const mergeRanges = getWorksheetMergeRanges(worksheet as any);
 
     for (const { rowNumber, arrayKey } of rowsToExpand) {
-      const array = data[arrayKey];
+      let array = data[arrayKey];
       if (array === undefined) {
         continue; // Leave markers untouched
       }
+
+      // Support boolean conditional rows: true -> render once, false -> remove
+      const isBooleanRow = typeof array === 'boolean';
+      if (isBooleanRow) {
+        array = array ? [{ __isConditional: true }] : [];
+      }
+
       if (!Array.isArray(array)) {
         const sheetName = worksheet.name;
         throw new Error(
-          `[[${arrayKey}.*]] requires "${arrayKey}" to be an array in worksheet "${sheetName}", row ${rowNumber}. Received: ${
+          `[[${arrayKey}.*]] requires "${arrayKey}" to be an array or boolean in worksheet "${sheetName}", row ${rowNumber}. Received: ${
             array === null ? 'null' : typeof array
           }`,
         );
       }
 
       const originalRow = worksheet.getRow(rowNumber);
+      const rowValues: any[] = [];
+      originalRow.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+        rowValues[colNumber] = cell.value;
+      });
 
       // Collect merges that involve the template row before deleting it
       const templateRowMerges = mergeRanges.filter((range) =>
@@ -138,8 +195,9 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
         const newRow = worksheet.insertRow(newRowNumber, []);
 
         // Copy values and styles from the original row
-        originalRow.eachCell((originalCell, colNumber) => {
-          let value = originalCell.value;
+        for (let colNumber = 1; colNumber < rowValues.length; colNumber++) {
+          const originalCell = originalRow.getCell(colNumber);
+          let value = rowValues[colNumber];
           const newCell = newRow.getCell(colNumber);
 
           // Adjust formulas to point to the new row when they reference the template row
@@ -158,7 +216,8 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
               const [, arrKey, propPath] = singleArMatch;
               if (arrKey === arrayKey) {
                 if (!propPath) {
-                  value = item === undefined ? value : item;
+                  // For boolean-based rows, resolve to empty string
+                  value = (isBooleanRow && item && (item as any).__isConditional) ? '' : (item === undefined ? value : item);
                 } else if (propPath === '$index' || propPath === '$index0') {
                   value = i;
                 } else if (propPath === '$index1' || propPath === '$number') {
@@ -173,12 +232,20 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
                   value = (i + 1) % 2 === 0;
                 } else if (propPath === '$odd' || propPath === '$isOdd') {
                   value = (i + 1) % 2 !== 0;
-                } else if (propPath === '$row') {
+                } else if (propPath === '$row' || propPath === '$rowNumber') {
                   value = newRowNumber;
-                } else if (propPath === '$col') {
+                } else if (propPath === '$rowIndex') {
+                  value = newRowNumber - 1;
+                } else if (propPath === '$col' || propPath === '$colNumber') {
                   value = colNumber;
-                } else if (propPath === '$colLetter') {
+                } else if (propPath === '$colIndex') {
+                  value = colNumber - 1;
+                } else if (propPath === '$colLetter' || propPath === '$columnLetter') {
                   value = getColLetter(colNumber);
+                } else if (propPath === '$isEvenCol') {
+                  value = colNumber % 2 === 0;
+                } else if (propPath === '$isOddCol') {
+                  value = colNumber % 2 !== 0;
                 } else if (propPath === '$cell') {
                   value = `${getColLetter(colNumber)}${newRowNumber}`;
                 } else {
@@ -211,6 +278,8 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
                 if (arrKey !== arrayKey) return propPath ? `[[${arrKey}.${propPath}]]` : `[[${arrKey}]]`;
 
                 if (!propPath) {
+                  // For boolean-based rows, resolve to empty string
+                  if (isBooleanRow && item && (item as any).__isConditional) return '';
                   return item == null ? '' : String(item);
                 }
 
@@ -221,9 +290,13 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
                 if (propPath === '$length') return String(array.length);
                 if (propPath === '$even' || propPath === '$isEven') return String((i + 1) % 2 === 0);
                 if (propPath === '$odd' || propPath === '$isOdd') return String((i + 1) % 2 !== 0);
-                if (propPath === '$row') return String(newRowNumber);
-                if (propPath === '$col') return String(colNumber);
-                if (propPath === '$colLetter') return getColLetter(colNumber);
+                if (propPath === '$row' || propPath === '$rowNumber') return String(newRowNumber);
+                if (propPath === '$rowIndex') return String(newRowNumber - 1);
+                if (propPath === '$col' || propPath === '$colNumber') return String(colNumber);
+                if (propPath === '$colIndex') return String(colNumber - 1);
+                if (propPath === '$colLetter' || propPath === '$columnLetter') return getColLetter(colNumber);
+                if (propPath === '$isEvenCol') return String(colNumber % 2 === 0);
+                if (propPath === '$isOddCol') return String(colNumber % 2 !== 0);
                 if (propPath === '$cell') return `${getColLetter(colNumber)}${newRowNumber}`;
 
                 const { found, value: resolved } = resolvePath(item, propPath);
@@ -232,7 +305,7 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
               });
 
               // Root-level interpolation: {{key}}
-              value = value.replace(/\{\{\s*([^\}]+)\s*\}\}/g, (_, path) => {
+              value = value.replace(/\{\{\s*([^\}]+)\s*\}\}/g, (_: string, path: string) => {
                 const { found, value: resolved } = resolveWithContext(path, data, {
                   ...sheetCtx,
                   row: newRowNumber,
@@ -257,7 +330,7 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
           if (originalCell.protection) {
             newCell.protection = { ...originalCell.protection };
           }
-        });
+        }
 
         // Replicate merges for this new row
         for (const range of templateRowMerges) {
@@ -276,8 +349,8 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
     }
 
     // Second pass: interpolate root-level {{ }} markers in all cells
-    worksheet.eachRow((row, rowNumber) => {
-      row.eachCell((cell, colNumber) => {
+    worksheet.eachRow({ includeEmpty: true }, (row, rowNumber) => {
+      row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
         if (typeof cell.value !== 'string') return;
 
         let value: any = cell.value;
@@ -307,7 +380,9 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
           });
         }
 
-        cell.value = value;
+        if (value !== undefined) {
+          cell.value = value;
+        }
       });
     });
   }
