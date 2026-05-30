@@ -25,6 +25,9 @@ function resolveWithContext(
 ): { found: boolean; value: any } {
   const trimmedPath = path.trim();
   if (trimmedPath === '$now') return { found: true, value: ctx.now };
+  if (trimmedPath === '$year') return { found: true, value: ctx.now.getFullYear() };
+  if (trimmedPath === '$month') return { found: true, value: ctx.now.getMonth() + 1 };
+  if (trimmedPath === '$day') return { found: true, value: ctx.now.getDate() };
   if (trimmedPath === '$sheet' || trimmedPath === '$sheetName') return { found: true, value: ctx.sheet };
   if (trimmedPath === '$sheetIndex') return { found: true, value: ctx.sheetIndex };
   if (trimmedPath === '$sheetNumber')
@@ -41,13 +44,20 @@ function resolveWithContext(
           : undefined,
     };
   }
-  if (trimmedPath === '$row') return { found: true, value: ctx.row };
-  if (trimmedPath === '$col') return { found: true, value: ctx.col };
-  if (trimmedPath === '$isEven' || trimmedPath === '$even')
+  if (trimmedPath === '$row' || trimmedPath === '$rowNumber') return { found: true, value: ctx.row };
+  if (trimmedPath === '$col' || trimmedPath === '$colNumber') return { found: true, value: ctx.col };
+  if (trimmedPath === '$rowIndex') return { found: true, value: ctx.row !== undefined ? ctx.row - 1 : undefined };
+  if (trimmedPath === '$colIndex') return { found: true, value: ctx.col !== undefined ? ctx.col - 1 : undefined };
+  if (trimmedPath === '$isEven' || trimmedPath === '$even' || trimmedPath === '$isEvenRow')
     return { found: true, value: ctx.row !== undefined ? ctx.row % 2 === 0 : undefined };
-  if (trimmedPath === '$isOdd' || trimmedPath === '$odd')
+  if (trimmedPath === '$isOdd' || trimmedPath === '$odd' || trimmedPath === '$isOddRow')
     return { found: true, value: ctx.row !== undefined ? ctx.row % 2 !== 0 : undefined };
-  if (trimmedPath === '$colLetter') return { found: true, value: ctx.col ? getColLetter(ctx.col) : undefined };
+  if (trimmedPath === '$isEvenCol')
+    return { found: true, value: ctx.col !== undefined ? ctx.col % 2 === 0 : undefined };
+  if (trimmedPath === '$isOddCol')
+    return { found: true, value: ctx.col !== undefined ? ctx.col % 2 !== 0 : undefined };
+  if (trimmedPath === '$colLetter' || trimmedPath === '$columnLetter')
+    return { found: true, value: ctx.col ? getColLetter(ctx.col) : undefined };
   if (trimmedPath === '$cell') {
     return {
       found: true,
@@ -173,12 +183,20 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
                   value = (i + 1) % 2 === 0;
                 } else if (propPath === '$odd' || propPath === '$isOdd') {
                   value = (i + 1) % 2 !== 0;
-                } else if (propPath === '$row') {
+                } else if (propPath === '$row' || propPath === '$rowNumber') {
                   value = newRowNumber;
-                } else if (propPath === '$col') {
+                } else if (propPath === '$rowIndex') {
+                  value = newRowNumber - 1;
+                } else if (propPath === '$col' || propPath === '$colNumber') {
                   value = colNumber;
-                } else if (propPath === '$colLetter') {
+                } else if (propPath === '$colIndex') {
+                  value = colNumber - 1;
+                } else if (propPath === '$colLetter' || propPath === '$columnLetter') {
                   value = getColLetter(colNumber);
+                } else if (propPath === '$isEvenCol') {
+                  value = colNumber % 2 === 0;
+                } else if (propPath === '$isOddCol') {
+                  value = colNumber % 2 !== 0;
                 } else if (propPath === '$cell') {
                   value = `${getColLetter(colNumber)}${newRowNumber}`;
                 } else {
@@ -221,9 +239,13 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
                 if (propPath === '$length') return String(array.length);
                 if (propPath === '$even' || propPath === '$isEven') return String((i + 1) % 2 === 0);
                 if (propPath === '$odd' || propPath === '$isOdd') return String((i + 1) % 2 !== 0);
-                if (propPath === '$row') return String(newRowNumber);
-                if (propPath === '$col') return String(colNumber);
-                if (propPath === '$colLetter') return getColLetter(colNumber);
+                if (propPath === '$row' || propPath === '$rowNumber') return String(newRowNumber);
+                if (propPath === '$rowIndex') return String(newRowNumber - 1);
+                if (propPath === '$col' || propPath === '$colNumber') return String(colNumber);
+                if (propPath === '$colIndex') return String(colNumber - 1);
+                if (propPath === '$colLetter' || propPath === '$columnLetter') return getColLetter(colNumber);
+                if (propPath === '$isEvenCol') return String(colNumber % 2 === 0);
+                if (propPath === '$isOddCol') return String(colNumber % 2 !== 0);
                 if (propPath === '$cell') return `${getColLetter(colNumber)}${newRowNumber}`;
 
                 const { found, value: resolved } = resolvePath(item, propPath);

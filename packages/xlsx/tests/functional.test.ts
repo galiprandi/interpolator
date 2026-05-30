@@ -688,5 +688,51 @@ describe('interpolateXlsx - functional', () => {
       expect(ws.getCell('C2').value).toBe(true);
       expect(ws.getCell('D2').value).toBe(false);
     });
+
+    it('should support new date markers $year, $month, $day', async () => {
+      const template = await buildTemplateBuffer((wb) => {
+        const ws = wb.addWorksheet('Sheet1');
+        ws.getCell('A1').value = '{{$year}}-{{$month}}-{{$day}}';
+      });
+
+      const result = await interpolateXlsx({ template, data: {} });
+      const ws = await loadWorksheetFromResult(result, 'Sheet1');
+
+      const now = new Date();
+      expect(ws.getCell('A1').value).toBe(`${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`);
+    });
+
+    it('should support new row/col markers and aliases', async () => {
+      const template = await buildTemplateBuffer((wb) => {
+        const ws = wb.addWorksheet('Sheet1');
+        ws.getCell('A1').value = 'R:{{$row}}/{{$rowNumber}}/{{$rowIndex}}';
+        ws.getCell('B1').value = 'C:{{$col}}/{{$colNumber}}/{{$colIndex}}';
+        ws.getCell('C1').value = 'P:{{$isEvenRow}}/{{$isOddRow}}';
+        ws.getCell('D1').value = 'CP:{{$isEvenCol}}/{{$isOddCol}}';
+        ws.getCell('E1').value = 'L:{{$columnLetter}}';
+
+        ws.getCell('A2').value = '[[items.$row]]/[[items.$rowNumber]]/[[items.$rowIndex]]';
+        ws.getCell('B2').value = '[[items.$col]]/[[items.$colNumber]]/[[items.$colIndex]]';
+        ws.getCell('C2').value = '[[items.$columnLetter]]';
+        ws.getCell('D2').value = '[[items.$isEvenCol]]/[[items.$isOddCol]]';
+      });
+
+      const data = { items: [{ name: 'A' }] };
+      const result = await interpolateXlsx({ template, data });
+      const ws = await loadWorksheetFromResult(result, 'Sheet1');
+
+      // Row 1
+      expect(ws.getCell('A1').value).toBe('R:1/1/0');
+      expect(ws.getCell('B1').value).toBe('C:2/2/1');
+      expect(ws.getCell('C1').value).toBe('P:false/true');
+      expect(ws.getCell('D1').value).toBe('CP:true/false');
+      expect(ws.getCell('E1').value).toBe('L:E');
+
+      // Row 2 (Expanded)
+      expect(ws.getCell('A2').value).toBe('2/2/1');
+      expect(ws.getCell('B2').value).toBe('2/2/1');
+      expect(ws.getCell('C2').value).toBe('C');
+      expect(ws.getCell('D2').value).toBe('true/false');
+    });
   });
 });

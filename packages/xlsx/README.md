@@ -117,9 +117,13 @@ You can use these special property paths within an array context to include indi
 - `[[array.$odd]]` or `[[array.$isOdd]]`: Boolean flag (`true`/`false`) for odd items (1-indexed).
 - `[[array.$length]]`: The total number of items in the array.
 - `[[array.$cell]]`: The current cell address (e.g. A2, B3).
-- `[[array.$colLetter]]`: The current column letter (e.g. A, B, AA).
-- `[[array.$row]]`: The current row number.
-- `[[array.$col]]`: The current column number.
+- `[[array.$colLetter]]` or `[[array.$columnLetter]]`: The current column letter (e.g. A, B, AA).
+- `[[array.$row]]` or `[[array.$rowNumber]]`: The current row number (1-indexed).
+- `[[array.$rowIndex]]`: The current row index (0-indexed).
+- `[[array.$col]]` or `[[array.$colNumber]]`: The current column number (1-indexed).
+- `[[array.$colIndex]]`: The current column index (0-indexed).
+- `[[array.$isEvenCol]]`: Boolean flag for even columns (1-indexed).
+- `[[array.$isOddCol]]`: Boolean flag for odd columns (1-indexed).
 
 Example: `[[items.$number]] of [[items.$length]]: [[items.name]]` will produce "1 of 10: First Item", etc.
 
@@ -128,17 +132,24 @@ Example: `[[items.$number]] of [[items.$length]]: [[items.name]]` will produce "
 These markers can be used both in `{{}}` and `[[]]` contexts:
 
 - `{{$now}}`: Current date and time.
+- `{{$year}}`: Current year (e.g. 2024).
+- `{{$month}}`: Current month (1-12).
+- `{{$day}}`: Current day of the month (1-31).
 - `{{$sheet}}` or `{{$sheetName}}`: Current worksheet name.
 - `{{$sheetIndex}}`: 0-based worksheet index.
 - `{{$sheetNumber}}`: 1-based worksheet index.
 - `{{$totalSheets}}`: Total number of sheets in the workbook.
 - `{{$isFirstSheet}}`: `true` for the first sheet.
 - `{{$isLastSheet}}`: `true` for the last sheet.
-- `{{$row}}`: Current row number.
-- `{{$col}}`: Current column number.
-- `{{$isEven}}`: `true` for even-numbered rows.
-- `{{$isOdd}}`: `true` for odd-numbered rows.
-- `{{$colLetter}}`: Current column letter (e.g. A, B, Z, AA).
+- `{{$row}}` or `{{$rowNumber}}`: Current row number (1-indexed).
+- `{{$rowIndex}}`: Current row index (0-indexed).
+- `{{$col}}` or `{{$colNumber}}`: Current column number (1-indexed).
+- `{{$colIndex}}`: Current column index (0-indexed).
+- `{{$isEven}}`, `{{$even}}` or `{{$isEvenRow}}`: `true` for even-numbered rows.
+- `{{$isOdd}}`, `{{$odd}}` or `{{$isOddRow}}`: `true` for odd-numbered rows.
+- `{{$isEvenCol}}`: `true` for even-numbered columns.
+- `{{$isOddCol}}`: `true` for odd-numbered columns.
+- `{{$colLetter}}` or `{{$columnLetter}}`: Current column letter (e.g. A, B, Z, AA).
 - `{{$cell}}`: Current cell address (e.g. A1, B2).
 
 ## Formatting, formulas and merges

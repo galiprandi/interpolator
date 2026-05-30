@@ -125,6 +125,13 @@ After interpolation with the data above, the result would be:
   - `[[array.$length]]`: Total number of items in the array.
   - `[[array.$even]]` or `[[array.$isEven]]`: `true` for even-numbered rows.
   - `[[array.$odd]]` or `[[array.$isOdd]]`: `true` for odd-numbered rows.
+  - `[[array.$row]]` or `[[array.$rowNumber]]`: Current row number.
+  - `[[array.$rowIndex]]`: Current 0-based row index.
+  - `[[array.$col]]` or `[[array.$colNumber]]`: Current column number.
+  - `[[array.$colIndex]]`: Current 0-based column index.
+  - `[[array.$colLetter]]` or `[[array.$columnLetter]]`: Current column letter.
+  - `[[array.$isEvenCol]]`: `true` for even-numbered columns.
+  - `[[array.$isOddCol]]`: `true` for odd-numbered columns.
 - If the array is empty (`[]`), the row is removed from the output.
 - If `array` does not exist in the data, markers are left as-is.
 - If an item in the array does not have the specified key, the marker remains (e.g., `[[items.missing]]`).
