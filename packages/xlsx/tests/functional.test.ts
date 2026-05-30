@@ -779,4 +779,70 @@ describe('interpolateXlsx - functional', () => {
       expect(ws.getCell('A3').value).toBe('Country: Unknown');
     });
   });
+
+  describe('New Spark markers and array default values', () => {
+    it('should support new date/time markers $hour, $minute, $second, $weekday', async () => {
+      const template = await buildTemplateBuffer((wb) => {
+        const ws = wb.addWorksheet('Sheet1');
+        ws.getCell('A1').value = '{{$hour}}:{{$minute}}:{{$second}} ({{$weekday}})';
+      });
+
+      const result = await interpolateXlsx({ template, data: {} });
+      const ws = await loadWorksheetFromResult(result, 'Sheet1');
+
+      const now = new Date();
+      expect(ws.getCell('A1').value).toBe(`${now.getHours()}:${now.getMinutes()}:${now.getSeconds()} (${now.getDay()})`);
+    });
+
+    it('should support $isHeader marker', async () => {
+      const template = await buildTemplateBuffer((wb) => {
+        const ws = wb.addWorksheet('Sheet1');
+        ws.getCell('A1').value = 'Header: {{$isHeader}}';
+        ws.getCell('A2').value = 'Row2: {{$isHeader}}';
+      });
+
+      const result = await interpolateXlsx({ template, data: {} });
+      const ws = await loadWorksheetFromResult(result, 'Sheet1');
+
+      expect(ws.getCell('A1').value).toBe('Header: true');
+      expect(ws.getCell('A2').value).toBe('Row2: false');
+    });
+
+    it('should support default values in array expansion', async () => {
+      const template = await buildTemplateBuffer((wb) => {
+        const ws = wb.addWorksheet('Sheet1');
+        ws.getCell('A1').value = '[[items.name || Guest]] - [[items.city || Unknown]]';
+      });
+
+      const data = {
+        items: [
+          { name: 'Alice' },
+          { city: 'Wonderland' }
+        ]
+      };
+
+      const result = await interpolateXlsx({ template, data });
+      const ws = await loadWorksheetFromResult(result, 'Sheet1');
+
+      expect(ws.getCell('A1').value).toBe('Alice - Unknown');
+      expect(ws.getCell('A2').value).toBe('Guest - Wonderland');
+    });
+
+    it('should support new markers in array expansion', async () => {
+      const template = await buildTemplateBuffer((wb) => {
+        const ws = wb.addWorksheet('Sheet1');
+        ws.getCell('A1').value = 'Row [[items.$rowNumber]]: [[items.name]] ([[items.$index1]] of [[items.$length]])';
+      });
+
+      const data = {
+        items: [{ name: 'A' }, { name: 'B' }]
+      };
+
+      const result = await interpolateXlsx({ template, data });
+      const ws = await loadWorksheetFromResult(result, 'Sheet1');
+
+      expect(ws.getCell('A1').value).toBe('Row 1: A (1 of 2)');
+      expect(ws.getCell('A2').value).toBe('Row 2: B (2 of 2)');
+    });
+  });
 });

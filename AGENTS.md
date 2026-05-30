@@ -163,6 +163,36 @@ In this case:
 - `[[items.id]]` and `[[items.qty]]` are replaced by values from the current `item`.
 - `{{client.name}}` is replaced by the same value from the root data object in every repeated row.
 
+### 4. Built-in Context Markers
+
+These markers can be used both in `{{}}` and `[[]]` contexts:
+
+- `{{$now}}`: Current date and time.
+- `{{$year}}`: Current year (e.g. 2024).
+- `{{$month}}`: Current month (1-12).
+- `{{$day}}`: Current day of the month (1-31).
+- `{{$hour}}`: Current hour (0-23).
+- `{{$minute}}`: Current minute (0-59).
+- `{{$second}}`: Current second (0-59).
+- `{{$weekday}}`: Current day of the week (0-6, where 0 is Sunday).
+- `{{$isHeader}}`: `true` if the marker is in the first row.
+- `{{$sheet}}` or `{{$sheetName}}`: Current worksheet name.
+- `{{$sheetIndex}}`: 0-based worksheet index.
+- `{{$sheetNumber}}`: 1-based worksheet index.
+- `{{$totalSheets}}`: Total number of sheets in the workbook.
+- `{{$isFirstSheet}}`: `true` for the first sheet.
+- `{{$isLastSheet}}`: `true` for the last sheet.
+- `{{$row}}` or `{{$rowNumber}}`: Current row number (1-indexed).
+- `{{$rowIndex}}`: Current row index (0-indexed).
+- `{{$col}}` or `{{$colNumber}}`: Current column number (1-indexed).
+- `{{$colIndex}}`: Current column index (0-indexed).
+- `{{$isEven}}`, `{{$even}}` or `{{$isEvenRow}}`: `true` for even-numbered rows.
+- `{{$isOdd}}`, `{{$odd}}` or `{{$isOddRow}}`: `true` for odd-numbered rows.
+- `{{$isEvenCol}}`: `true` for even-numbered columns.
+- `{{$isOddCol}}`: `true` for odd-numbered columns.
+- `{{$colLetter}}` or `{{$columnLetter}}`: Current column letter (e.g. A, B, Z, AA).
+- `{{$cell}}`: Current cell address (e.g. A1, B2).
+
 ---
 
 ## API

@@ -21,6 +21,8 @@ function resolveWithContext(
     totalSheets?: number;
     row?: number;
     col?: number;
+    index?: number;
+    length?: number;
   },
 ): { found: boolean; value: any } {
   const trimmed = path.trim();
@@ -49,6 +51,8 @@ function resolveInternal(
     totalSheets?: number;
     row?: number;
     col?: number;
+    index?: number;
+    length?: number;
   },
 ): { found: boolean; value: any } {
   switch (trimmedPath) {
@@ -56,6 +60,10 @@ function resolveInternal(
     case '$year': return { found: true, value: ctx.now.getFullYear() };
     case '$month': return { found: true, value: ctx.now.getMonth() + 1 };
     case '$day': return { found: true, value: ctx.now.getDate() };
+    case '$hour': return { found: true, value: ctx.now.getHours() };
+    case '$minute': return { found: true, value: ctx.now.getMinutes() };
+    case '$second': return { found: true, value: ctx.now.getSeconds() };
+    case '$weekday': return { found: true, value: ctx.now.getDay() };
     case '$sheet':
     case '$sheetName': return { found: true, value: ctx.sheet };
     case '$sheetIndex': return { found: true, value: ctx.sheetIndex };
@@ -63,10 +71,8 @@ function resolveInternal(
       return { found: true, value: ctx.sheetIndex !== undefined ? ctx.sheetIndex + 1 : undefined };
     case '$totalSheets': return { found: true, value: ctx.totalSheets };
     case '$isFirstSheet':
-    case '$isFirst':
       return { found: true, value: ctx.sheetIndex === 0 };
     case '$isLastSheet':
-    case '$isLast':
       return {
         found: true,
         value: ctx.sheetIndex !== undefined && ctx.totalSheets !== undefined
@@ -81,10 +87,14 @@ function resolveInternal(
     case '$colIndex': return { found: true, value: ctx.col !== undefined ? ctx.col - 1 : undefined };
     case '$isEven':
     case '$even':
+      if (ctx.index !== undefined) return { found: true, value: (ctx.index + 1) % 2 === 0 };
+      return { found: true, value: ctx.row !== undefined ? ctx.row % 2 === 0 : undefined };
     case '$isEvenRow':
       return { found: true, value: ctx.row !== undefined ? ctx.row % 2 === 0 : undefined };
     case '$isOdd':
     case '$odd':
+      if (ctx.index !== undefined) return { found: true, value: (ctx.index + 1) % 2 !== 0 };
+      return { found: true, value: ctx.row !== undefined ? ctx.row % 2 !== 0 : undefined };
     case '$isOddRow':
       return { found: true, value: ctx.row !== undefined ? ctx.row % 2 !== 0 : undefined };
     case '$isEvenCol':
@@ -98,6 +108,31 @@ function resolveInternal(
       return {
         found: true,
         value: ctx.row && ctx.col ? `${getColLetter(ctx.col)}${ctx.row}` : undefined,
+      };
+    case '$isHeader':
+      return { found: true, value: ctx.row === 1 };
+    case '$index':
+    case '$index0':
+      return { found: true, value: ctx.index };
+    case '$index1':
+    case '$number':
+      return { found: true, value: ctx.index !== undefined ? ctx.index + 1 : undefined };
+    case '$length':
+      return { found: true, value: ctx.length };
+    case '$first':
+    case '$isFirst':
+      if (ctx.index !== undefined) return { found: true, value: ctx.index === 0 };
+      return { found: true, value: ctx.sheetIndex === 0 };
+    case '$last':
+    case '$isLast':
+      if (ctx.index !== undefined && ctx.length !== undefined) {
+        return { found: true, value: ctx.index === ctx.length - 1 };
+      }
+      return {
+        found: true,
+        value: ctx.sheetIndex !== undefined && ctx.totalSheets !== undefined
+            ? ctx.sheetIndex === ctx.totalSheets - 1
+            : undefined,
       };
     default:
       return resolvePath(data, trimmedPath);
@@ -211,45 +246,23 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
             // Styles & validation will be copied below; skip marker interpolation for formulas
           } else if (typeof value === 'string') {
             // Check if it's a single [[ ]] marker to preserve type
-            const singleArMatch = value.match(/^\[\[\s*([^\].\s]+)(?:\.([^\]\s]+))?\s*\]\]$/);
+            const singleArMatch = value.match(/^\[\[\s*([^\].\s]+)(?:\.([^\]]+))?\s*\]\]$/);
             if (singleArMatch) {
-              const [, arrKey, propPath] = singleArMatch;
+              const [, arrKey, propPathWithDefault] = singleArMatch;
               if (arrKey === arrayKey) {
-                if (!propPath) {
+                if (!propPathWithDefault) {
                   // For boolean-based rows, resolve to empty string
                   value = (isBooleanRow && item && (item as any).__isConditional) ? '' : (item === undefined ? value : item);
-                } else if (propPath === '$index' || propPath === '$index0') {
-                  value = i;
-                } else if (propPath === '$index1' || propPath === '$number') {
-                  value = i + 1;
-                } else if (propPath === '$first' || propPath === '$isFirst') {
-                  value = i === 0;
-                } else if (propPath === '$last' || propPath === '$isLast') {
-                  value = i === array.length - 1;
-                } else if (propPath === '$length') {
-                  value = array.length;
-                } else if (propPath === '$even' || propPath === '$isEven') {
-                  value = (i + 1) % 2 === 0;
-                } else if (propPath === '$odd' || propPath === '$isOdd') {
-                  value = (i + 1) % 2 !== 0;
-                } else if (propPath === '$row' || propPath === '$rowNumber') {
-                  value = newRowNumber;
-                } else if (propPath === '$rowIndex') {
-                  value = newRowNumber - 1;
-                } else if (propPath === '$col' || propPath === '$colNumber') {
-                  value = colNumber;
-                } else if (propPath === '$colIndex') {
-                  value = colNumber - 1;
-                } else if (propPath === '$colLetter' || propPath === '$columnLetter') {
-                  value = getColLetter(colNumber);
-                } else if (propPath === '$isEvenCol') {
-                  value = colNumber % 2 === 0;
-                } else if (propPath === '$isOddCol') {
-                  value = colNumber % 2 !== 0;
-                } else if (propPath === '$cell') {
-                  value = `${getColLetter(colNumber)}${newRowNumber}`;
                 } else {
-                  const { found, value: resolved } = resolvePath(item, propPath);
+                  // Remove leading dot
+                  const path = propPathWithDefault.startsWith('.') ? propPathWithDefault.slice(1) : propPathWithDefault;
+                  const { found, value: resolved } = resolveWithContext(path, item, {
+                    ...sheetCtx,
+                    row: newRowNumber,
+                    col: colNumber,
+                    index: i,
+                    length: array.length,
+                  });
                   value = found ? resolved : value;
                 }
               }
@@ -274,33 +287,26 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
             // Final string interpolation for remaining cases
             if (typeof value === 'string') {
               // Array interpolation: [[array.key]] or [[array]]
-              value = value.replace(/\[\[\s*([^\].\s]+)(?:\.([^\]\s]+))?\s*\]\]/g, (_, arrKey, propPath) => {
-                if (arrKey !== arrayKey) return propPath ? `[[${arrKey}.${propPath}]]` : `[[${arrKey}]]`;
+              value = value.replace(/\[\[\s*([^\].\s]+)(?:\.([^\]]+))?\s*\]\]/g, (full, arrKey, propPathWithDefault) => {
+                if (arrKey !== arrayKey) return full;
 
-                if (!propPath) {
+                if (!propPathWithDefault) {
                   // For boolean-based rows, resolve to empty string
                   if (isBooleanRow && item && (item as any).__isConditional) return '';
                   return item == null ? '' : String(item);
                 }
 
-                if (propPath === '$index' || propPath === '$index0') return String(i);
-                if (propPath === '$index1' || propPath === '$number') return String(i + 1);
-                if (propPath === '$first' || propPath === '$isFirst') return String(i === 0);
-                if (propPath === '$last' || propPath === '$isLast') return String(i === array.length - 1);
-                if (propPath === '$length') return String(array.length);
-                if (propPath === '$even' || propPath === '$isEven') return String((i + 1) % 2 === 0);
-                if (propPath === '$odd' || propPath === '$isOdd') return String((i + 1) % 2 !== 0);
-                if (propPath === '$row' || propPath === '$rowNumber') return String(newRowNumber);
-                if (propPath === '$rowIndex') return String(newRowNumber - 1);
-                if (propPath === '$col' || propPath === '$colNumber') return String(colNumber);
-                if (propPath === '$colIndex') return String(colNumber - 1);
-                if (propPath === '$colLetter' || propPath === '$columnLetter') return getColLetter(colNumber);
-                if (propPath === '$isEvenCol') return String(colNumber % 2 === 0);
-                if (propPath === '$isOddCol') return String(colNumber % 2 !== 0);
-                if (propPath === '$cell') return `${getColLetter(colNumber)}${newRowNumber}`;
+                // Remove leading dot
+                const path = propPathWithDefault.startsWith('.') ? propPathWithDefault.slice(1) : propPathWithDefault;
+                const { found, value: resolved } = resolveWithContext(path, item, {
+                  ...sheetCtx,
+                  row: newRowNumber,
+                  col: colNumber,
+                  index: i,
+                  length: array.length,
+                });
 
-                const { found, value: resolved } = resolvePath(item, propPath);
-                if (!found) return `[[${arrKey}.${propPath}]]`;
+                if (!found) return full;
                 return resolved == null ? '' : String(resolved);
               });
 
