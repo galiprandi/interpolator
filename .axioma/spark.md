@@ -35,3 +35,7 @@
 ## 2026-06-10 - [Roadmap: @interpolator/markdown]
 **Learning:** There is strong interest in extending the interpolation concept to Markdown. This requires handling different structural constraints (like table syntax and indentation) compared to XLSX.
 **Pattern:** Future packages should follow the same declarative syntax ({{}} and [[]]) to ensure a consistent experience across all `@interpolator` formats.
+
+## 2026-06-15 - [Centralized Marker Resolution and Advanced Context]
+**Learning:** Consolidating marker resolution into a single context-aware function ('resolveInternal') significantly simplifies the interpolation engine. It allows for consistent behavior between root-level and array-level markers, and makes it trivial to add new metadata markers like $hour or $isHeader.
+**Pattern:** Pass a rich 'context' object (containing sheet, row, col, index, length, etc.) through the resolution chain to enable powerful, context-sensitive markers without complicating the user's data schema.

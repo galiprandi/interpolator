@@ -140,6 +140,11 @@ These markers can be used both in `{{}}` and `[[]]` contexts:
 - `{{$year}}`: Current year (e.g. 2024).
 - `{{$month}}`: Current month (1-12).
 - `{{$day}}`: Current day of the month (1-31).
+- `{{$hour}}`: Current hour (0-23).
+- `{{$minute}}`: Current minute (0-59).
+- `{{$second}}`: Current second (0-59).
+- `{{$weekday}}`: Current day of the week (0-6, where 0 is Sunday).
+- `{{$isHeader}}`: `true` if the marker is in the first row.
 - `{{$sheet}}` or `{{$sheetName}}`: Current worksheet name.
 - `{{$sheetIndex}}`: 0-based worksheet index.
 - `{{$sheetNumber}}`: 1-based worksheet index.
