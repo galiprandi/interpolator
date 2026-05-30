@@ -38,6 +38,17 @@ Agents should assume:
 
 ---
 
+## Roadmap & Future Directions
+
+### `@interpolator/markdown` (Next Priority)
+We are planning to extend the ecosystem with a Markdown interpolator. Key features will include:
+- Table expansion from arrays.
+- Conditional sections.
+- Nested list interpolation.
+- Preservation of Markdown structure and metadata.
+
+---
+
 ## Installation
 
 ```bash
@@ -107,12 +118,14 @@ After interpolation with the data above, the result would be:
 - Used for static values that do not change per row.
 - **Type Preservation**: If the cell contains *only* the `{{key}}` marker, the resulting cell will have the same type as the data (e.g., Number, Date, Boolean).
 - Supports nested paths: `{{user.profile.email}}`.
-- If the key is missing, the marker remains in the cell as-is (e.g., `{{missing.key}}`).
-- If the value is `null` or `undefined`, the cell becomes empty (`""`).
+- **Default values**: `{{path || fallback}}`. Fallback can be a literal string or another path.
+- If the key is missing and no default is provided, the marker remains in the cell as-is.
+- If the value is `null` or `undefined` and no default is provided, the cell becomes empty (`""`).
 
 ### 2. Array-Based Row Repetition: `[[array.key]]` or `[[array]]`
 
 - Used inside a row to indicate that the entire row should be repeated for each item in the `array`.
+- **Conditional Rows**: If the resolved value of the array key is a **boolean**, the row is rendered once (if `true`) or removed (if `false`).
 - **Type Preservation**: If a cell contains *only* a `[[ ]]` marker, it will preserve the original data type (e.g., Number, Date, Boolean).
 - The array name (`array`) must exist at the root of the data object and must be an array.
 - Each occurrence of `[[array.key]]` in the row is replaced with the value of `item.key` from the current iteration.

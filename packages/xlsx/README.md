@@ -64,8 +64,11 @@ Use `{{path.to.value}}` for values that do not depend on the current row:
 
 - Resolved against the root `data` object.
 - Supports deep paths like `{{user.profile.email}}`.
-- If the key (or any intermediate segment) does not exist, the **marker is left as-is**.
-- If the resolved value is `null` or `undefined`, the cell becomes an empty string (`""`).
+- **Default values**: Use `||` to provide a fallback if a value is missing or null.
+  - `{{user.name || N/A}}` -> renders "N/A" if `user.name` is missing or null.
+  - `{{user.city || user.backupCity}}` -> tries to resolve `user.backupCity` if `user.city` is not found.
+- If the key (or any intermediate segment) does not exist and no default is provided, the **marker is left as-is**.
+- If the resolved value is `null` or `undefined` and no default is provided, the cell becomes an empty string (`""`).
 
 ### `[[]]` – array row expansion
 
@@ -75,6 +78,8 @@ Use `[[array.key]]` (for objects) or `[[array]]` (for primitives) in a row to ma
 - The row containing `[[items.*]]` or `[[items]]` is removed and replaced by **N rows**, one per item in the array.
 - `[[array.prop]]` is resolved against the current item properties.
 - `[[array]]` (without property) is resolved to the item itself (useful for arrays of strings or numbers).
+- **Conditional rows**: Use a boolean value for the array key to conditionally show or hide a row.
+  - `[[showPremiumFeatures]]` -> if `true`, the row is rendered once (with markers removed); if `false`, the row is removed.
 - The same row can mix `{{}}` and `[[]]`:
 
   ```text

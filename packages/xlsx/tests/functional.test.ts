@@ -275,7 +275,7 @@ describe('interpolateXlsx - functional', () => {
     };
 
     await expect(interpolateXlsx({ template, data })).rejects.toThrow(
-      /\[\[user\.\*\]\] requires "user" to be an array in worksheet "Sheet1", row 2\. Received:/i,
+      /\[\[user\.\*\]\] requires "user" to be an array or boolean in worksheet "Sheet1", row 2\. Received:/i,
     );
   });
 
@@ -733,6 +733,50 @@ describe('interpolateXlsx - functional', () => {
       expect(ws.getCell('B2').value).toBe('2/2/1');
       expect(ws.getCell('C2').value).toBe('C');
       expect(ws.getCell('D2').value).toBe('true/false');
+    });
+  });
+
+  describe('Boolean conditional rows and default values', () => {
+    it('should support boolean conditional rows', async () => {
+      const template = await buildTemplateBuffer((wb) => {
+        const ws = wb.addWorksheet('Sheet1');
+        ws.getCell('A1').value = 'Header';
+        ws.getCell('A2').value = 'Shown [[showMe]]';
+        ws.getCell('A3').value = 'Hidden [[hideMe]]';
+        ws.getCell('A4').value = 'Footer';
+      });
+
+      const data = { showMe: true, hideMe: false };
+      const result = await interpolateXlsx({ template, data });
+      const ws = await loadWorksheetFromResult(result, 'Sheet1');
+
+      expect(ws.getCell('A1').value).toBe('Header');
+      expect(ws.getCell('A2').value).toBe('Shown ');
+      expect(ws.getCell('A3').value).toBe('Footer');
+      expect(ws.rowCount).toBe(3);
+    });
+
+    it('should support default values with || operator', async () => {
+      const template = await buildTemplateBuffer((wb) => {
+        const ws = wb.addWorksheet('Sheet1');
+        ws.getCell('A1').value = 'Name: {{user.name || N/A}}';
+        ws.getCell('A2').value = 'City: {{user.city || user.backupCity}}';
+        ws.getCell('A3').value = 'Country: {{user.country || Unknown}}';
+      });
+
+      const data = {
+        user: {
+          name: null,
+          backupCity: 'London'
+        }
+      };
+
+      const result = await interpolateXlsx({ template, data });
+      const ws = await loadWorksheetFromResult(result, 'Sheet1');
+
+      expect(ws.getCell('A1').value).toBe('Name: N/A');
+      expect(ws.getCell('A2').value).toBe('City: London');
+      expect(ws.getCell('A3').value).toBe('Country: Unknown');
     });
   });
 });
