@@ -39,3 +39,7 @@
 ## 2026-06-15 - [Centralized Marker Resolution and Advanced Context]
 **Learning:** Consolidating marker resolution into a single context-aware function ('resolveInternal') significantly simplifies the interpolation engine. It allows for consistent behavior between root-level and array-level markers, and makes it trivial to add new metadata markers like $hour or $isHeader.
 **Pattern:** Pass a rich 'context' object (containing sheet, row, col, index, length, etc.) through the resolution chain to enable powerful, context-sensitive markers without complicating the user's data schema.
+
+## 2026-05-31 - [Piped Transformations for Template Markers]
+**Learning:** Adding a pipe operator (`|`) for string transformations (upper, lower, capitalize, trim, camelCase) provides users with powerful formatting capabilities directly in the template, reducing the need for data preprocessing. Chaining these transforms increases flexibility.
+**Pattern:** Decouple path resolution from value transformation. Resolve the value first, then apply a series of transformations. This allows the same transformation logic to be reused across different marker types (interpolation and array expansion) and data sources (main data and fallbacks).

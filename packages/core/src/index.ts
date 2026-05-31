@@ -35,3 +35,34 @@ export function resolvePath(obj: any, path: string): { found: boolean; value: an
 
   return { found: true, value: current };
 }
+
+export function applyTransforms(value: any, transforms: string[]): any {
+  if (value == null || typeof value !== 'string') return value;
+
+  let result = value;
+  for (const t of transforms) {
+    const transform = t.trim().toLowerCase();
+    switch (transform) {
+      case 'upper':
+        result = result.toUpperCase();
+        break;
+      case 'lower':
+        result = result.toLowerCase();
+        break;
+      case 'capitalize':
+        result = result.charAt(0).toUpperCase() + result.slice(1);
+        break;
+      case 'trim':
+        result = result.trim();
+        break;
+      case 'camelcase':
+        result = result
+          .trim()
+          .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase())
+          .replace(/[^a-zA-Z0-9]+$/, '')
+          .replace(/^[A-Z]/, (chr) => chr.toLowerCase());
+        break;
+    }
+  }
+  return result;
+}
