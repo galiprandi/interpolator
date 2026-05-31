@@ -44,9 +44,11 @@ export function applyTransforms(value: any, transforms: string[]): any {
     const transform = t.trim().toLowerCase();
     switch (transform) {
       case 'upper':
+      case 'uppercase':
         result = result.toUpperCase();
         break;
       case 'lower':
+      case 'lowercase':
         result = result.toLowerCase();
         break;
       case 'capitalize':
@@ -61,6 +63,29 @@ export function applyTransforms(value: any, transforms: string[]): any {
           .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase())
           .replace(/[^a-zA-Z0-9]+$/, '')
           .replace(/^[A-Z]/, (chr) => chr.toLowerCase());
+        break;
+      case 'pascalcase':
+        result = result
+          .trim()
+          .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase())
+          .replace(/[^a-zA-Z0-9]+$/, '')
+          .replace(/^[a-z]/, (chr) => chr.toUpperCase());
+        break;
+      case 'snakecase':
+        result = result
+          .trim()
+          .replace(/([a-z])([A-Z])/g, '$1_$2')
+          .replace(/[^a-zA-Z0-9]+/g, '_')
+          .toLowerCase()
+          .replace(/^_+|_+$/g, '');
+        break;
+      case 'kebabcase':
+        result = result
+          .trim()
+          .replace(/([a-z])([A-Z])/g, '$1-$2')
+          .replace(/[^a-zA-Z0-9]+/g, '-')
+          .toLowerCase()
+          .replace(/^-+|-+$/g, '');
         break;
     }
   }
