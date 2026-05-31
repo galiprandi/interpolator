@@ -1,5 +1,5 @@
 import ExcelJS from 'exceljs';
-import { resolvePath } from '@interpolator/core';
+import { resolvePath, applyTransforms } from '@interpolator/core';
 
 const { Workbook } = ExcelJS;
 
@@ -27,15 +27,23 @@ function resolveWithContext(
 ): { found: boolean; value: any } {
   const trimmed = path.trim();
   const parts = trimmed.split(/\s*\|\|\s*/);
-  const mainPath = parts[0];
+  const mainPathWithTransforms = parts[0];
   const defaultValue = parts[1];
+
+  const [mainPath, ...transforms] = mainPathWithTransforms.split(/\s*\|\s*/);
 
   let result = resolveInternal(mainPath, data, ctx);
 
   if ((!result.found || result.value == null) && defaultValue !== undefined) {
     // Try to resolve default value as a path first, if not found, use as literal
-    const resolvedDefault = resolveInternal(defaultValue, data, ctx);
-    return { found: true, value: resolvedDefault.found ? resolvedDefault.value : defaultValue };
+    const [defaultPath, ...defaultTransforms] = defaultValue.split(/\s*\|\s*/);
+    const resolvedDefault = resolveInternal(defaultPath, data, ctx);
+    const value = resolvedDefault.found ? resolvedDefault.value : defaultPath;
+    return { found: true, value: applyTransforms(value, defaultTransforms) };
+  }
+
+  if (result.found && transforms.length > 0) {
+    result.value = applyTransforms(result.value, transforms);
   }
 
   return result;

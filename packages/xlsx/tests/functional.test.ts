@@ -844,5 +844,62 @@ describe('interpolateXlsx - functional', () => {
       expect(ws.getCell('A1').value).toBe('Row 1: A (1 of 2)');
       expect(ws.getCell('A2').value).toBe('Row 2: B (2 of 2)');
     });
+
+    it('should support transformations with pipe operator', async () => {
+      const template = await buildTemplateBuffer((wb) => {
+        const ws = wb.addWorksheet('Sheet1');
+        ws.getCell('A1').value = '{{name | upper}}';
+        ws.getCell('A2').value = '{{name | lower}}';
+        ws.getCell('A3').value = '{{name | capitalize}}';
+        ws.getCell('A4').value = '{{phrase | trim}}';
+        ws.getCell('A5').value = '{{phrase | camelCase}}';
+        ws.getCell('A6').value = '{{missing | upper || Default Value | upper}}';
+      });
+
+      const data = {
+        name: 'spark',
+        phrase: '  hello world  ',
+      };
+
+      const result = await interpolateXlsx({ template, data });
+      const ws = await loadWorksheetFromResult(result, 'Sheet1');
+
+      expect(ws.getCell('A1').value).toBe('SPARK');
+      expect(ws.getCell('A2').value).toBe('spark');
+      expect(ws.getCell('A3').value).toBe('Spark');
+      expect(ws.getCell('A4').value).toBe('hello world');
+      expect(ws.getCell('A5').value).toBe('helloWorld');
+      expect(ws.getCell('A6').value).toBe('DEFAULT VALUE');
+    });
+
+    it('should support multiple transformations chained with pipes', async () => {
+      const template = await buildTemplateBuffer((wb) => {
+        const ws = wb.addWorksheet('Sheet1');
+        ws.getCell('A1').value = '{{phrase | trim | upper}}';
+      });
+
+      const data = { phrase: '  spark  ' };
+      const result = await interpolateXlsx({ template, data });
+      const ws = await loadWorksheetFromResult(result, 'Sheet1');
+
+      expect(ws.getCell('A1').value).toBe('SPARK');
+    });
+
+    it('should support transformations in array expansion', async () => {
+      const template = await buildTemplateBuffer((wb) => {
+        const ws = wb.addWorksheet('Sheet1');
+        ws.getCell('A1').value = '[[items.name | upper]]';
+      });
+
+      const data = {
+        items: [{ name: 'spark' }, { name: 'agent' }],
+      };
+
+      const result = await interpolateXlsx({ template, data });
+      const ws = await loadWorksheetFromResult(result, 'Sheet1');
+
+      expect(ws.getCell('A1').value).toBe('SPARK');
+      expect(ws.getCell('A2').value).toBe('AGENT');
+    });
   });
 });
