@@ -87,6 +87,14 @@ export function applyTransforms(value: any, transforms: string[]): any {
           .toLowerCase()
           .replace(/^-+|-+$/g, '');
         break;
+      case 'titlecase':
+        result = result
+          .trim()
+          .replace(/([a-z])([A-Z])/g, '$1 $2')
+          .replace(/[^a-zA-Z0-9]+/g, ' ')
+          .replace(/\b([a-z])/g, (_, chr) => chr.toUpperCase())
+          .trim();
+        break;
     }
   }
   return result;
