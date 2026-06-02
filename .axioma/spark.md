@@ -43,3 +43,7 @@
 ## 2026-05-31 - [Piped Transformations for Template Markers]
 **Learning:** Adding a pipe operator (`|`) for string transformations (upper, lower, capitalize, trim, camelCase) provides users with powerful formatting capabilities directly in the template, reducing the need for data preprocessing. Chaining these transforms increases flexibility.
 **Pattern:** Decouple path resolution from value transformation. Resolve the value first, then apply a series of transformations. This allows the same transformation logic to be reused across different marker types (interpolation and array expansion) and data sources (main data and fallbacks).
+
+## 2026-06-20 - [Non-string Transformations and JSON Formatting]
+**Learning:** Limiting transformations to strings is an unnecessary constraint that limits the utility of the pipe operator. By allowing any value to enter the transformation chain and providing a `json` transform, users can debug their data or output complex objects as strings directly in the template.
+**Pattern:** Remove early type-exits in transformation utilities. Guard string-specific logic with type checks and add a universal `json` (stringification) transform to handle non-primitive data gracefully.

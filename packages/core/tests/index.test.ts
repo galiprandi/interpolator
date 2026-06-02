@@ -57,8 +57,22 @@ describe('applyTransforms', () => {
     expect(applyTransforms('  hello world  ', ['trim', 'camelcase', 'capitalize'])).toBe('HelloWorld');
   });
 
-  it('should return original value for non-strings', () => {
+  it('should return original value for non-strings when using string-only transforms', () => {
     expect(applyTransforms(123, ['upper'])).toBe(123);
     expect(applyTransforms(null, ['upper'])).toBe(null);
+  });
+
+  it('should handle json transformation', () => {
+    const obj = { a: 1, b: 'hello' };
+    expect(applyTransforms(obj, ['json'])).toBe(JSON.stringify(obj, null, 2));
+    expect(applyTransforms([1, 2, 3], ['json'])).toBe(JSON.stringify([1, 2, 3], null, 2));
+    expect(applyTransforms('hello', ['json'])).toBe('"hello"');
+  });
+
+  it('should handle chained transformations with json', () => {
+    const obj = { name: 'spark' };
+    // json -> uppercase (no effect as json returns string, but uppercase works on it)
+    const jsonStr = JSON.stringify(obj, null, 2);
+    expect(applyTransforms(obj, ['json', 'uppercase'])).toBe(jsonStr.toUpperCase());
   });
 });
