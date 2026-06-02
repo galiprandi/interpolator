@@ -106,6 +106,28 @@ export function applyTransforms(value: any, transforms: string[]): any {
       case 'json':
         result = JSON.stringify(result, null, 2);
         break;
+      case 'join':
+        if (Array.isArray(result)) result = result.join(', ');
+        break;
+      case 'first':
+        if (Array.isArray(result) || typeof result === 'string') {
+          result = result.length > 0 ? result[0] : undefined;
+        }
+        break;
+      case 'last':
+        if (Array.isArray(result) || typeof result === 'string') {
+          result = result.length > 0 ? result[result.length - 1] : undefined;
+        }
+        break;
+      case 'length':
+        if (Array.isArray(result) || typeof result === 'string') result = result.length;
+        break;
+      case 'plural':
+        if (typeof result === 'number') result = result === 1 ? '' : 's';
+        break;
+      case 'round':
+        if (typeof result === 'number') result = Math.round(result);
+        break;
     }
   }
   return result;

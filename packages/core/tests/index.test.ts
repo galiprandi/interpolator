@@ -75,4 +75,47 @@ describe('applyTransforms', () => {
     const jsonStr = JSON.stringify(obj, null, 2);
     expect(applyTransforms(obj, ['json', 'uppercase'])).toBe(jsonStr.toUpperCase());
   });
+
+  it('should handle join transformation', () => {
+    expect(applyTransforms(['a', 'b', 'c'], ['join'])).toBe('a, b, c');
+    expect(applyTransforms([], ['join'])).toBe('');
+    expect(applyTransforms('not an array', ['join'])).toBe('not an array');
+  });
+
+  it('should handle first transformation', () => {
+    expect(applyTransforms(['a', 'b', 'c'], ['first'])).toBe('a');
+    expect(applyTransforms('hello', ['first'])).toBe('h');
+    expect(applyTransforms([], ['first'])).toBeUndefined();
+    expect(applyTransforms('', ['first'])).toBeUndefined();
+  });
+
+  it('should handle last transformation', () => {
+    expect(applyTransforms(['a', 'b', 'c'], ['last'])).toBe('c');
+    expect(applyTransforms('hello', ['last'])).toBe('o');
+    expect(applyTransforms([], ['last'])).toBeUndefined();
+    expect(applyTransforms('', ['last'])).toBeUndefined();
+  });
+
+  it('should handle length transformation', () => {
+    expect(applyTransforms(['a', 'b', 'c'], ['length'])).toBe(3);
+    expect(applyTransforms('hello', ['length'])).toBe(5);
+    expect(applyTransforms([], ['length'])).toBe(0);
+    expect(applyTransforms('', ['length'])).toBe(0);
+  });
+
+  it('should handle plural transformation', () => {
+    expect(applyTransforms(0, ['plural'])).toBe('s');
+    expect(applyTransforms(1, ['plural'])).toBe('');
+    expect(applyTransforms(2, ['plural'])).toBe('s');
+    expect(applyTransforms(1.5, ['plural'])).toBe('s');
+    expect(applyTransforms('not a number', ['plural'])).toBe('not a number');
+  });
+
+  it('should handle round transformation', () => {
+    expect(applyTransforms(1.4, ['round'])).toBe(1);
+    expect(applyTransforms(1.5, ['round'])).toBe(2);
+    expect(applyTransforms(1.6, ['round'])).toBe(2);
+    expect(applyTransforms(-1.5, ['round'])).toBe(-1); // Math.round(-1.5) is -1
+    expect(applyTransforms('not a number', ['round'])).toBe('not a number');
+  });
 });
