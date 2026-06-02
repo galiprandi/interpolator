@@ -37,63 +37,74 @@ export function resolvePath(obj: any, path: string): { found: boolean; value: an
 }
 
 export function applyTransforms(value: any, transforms: string[]): any {
-  if (value == null || typeof value !== 'string') return value;
-
   let result = value;
   for (const t of transforms) {
     const transform = t.trim().toLowerCase();
     switch (transform) {
       case 'upper':
       case 'uppercase':
-        result = result.toUpperCase();
+        if (typeof result === 'string') result = result.toUpperCase();
         break;
       case 'lower':
       case 'lowercase':
-        result = result.toLowerCase();
+        if (typeof result === 'string') result = result.toLowerCase();
         break;
       case 'capitalize':
-        result = result.charAt(0).toUpperCase() + result.slice(1);
+        if (typeof result === 'string') result = result.charAt(0).toUpperCase() + result.slice(1);
         break;
       case 'trim':
-        result = result.trim();
+        if (typeof result === 'string') result = result.trim();
         break;
       case 'camelcase':
-        result = result
-          .trim()
-          .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase())
-          .replace(/[^a-zA-Z0-9]+$/, '')
-          .replace(/^[A-Z]/, (chr) => chr.toLowerCase());
+        if (typeof result === 'string') {
+          result = result
+            .trim()
+            .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase())
+            .replace(/[^a-zA-Z0-9]+$/, '')
+            .replace(/^[A-Z]/, (chr) => chr.toLowerCase());
+        }
         break;
       case 'pascalcase':
-        result = result
-          .trim()
-          .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase())
-          .replace(/[^a-zA-Z0-9]+$/, '')
-          .replace(/^[a-z]/, (chr) => chr.toUpperCase());
+        if (typeof result === 'string') {
+          result = result
+            .trim()
+            .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase())
+            .replace(/[^a-zA-Z0-9]+$/, '')
+            .replace(/^[a-z]/, (chr) => chr.toUpperCase());
+        }
         break;
       case 'snakecase':
-        result = result
-          .trim()
-          .replace(/([a-z])([A-Z])/g, '$1_$2')
-          .replace(/[^a-zA-Z0-9]+/g, '_')
-          .toLowerCase()
-          .replace(/^_+|_+$/g, '');
+        if (typeof result === 'string') {
+          result = result
+            .trim()
+            .replace(/([a-z])([A-Z])/g, '$1_$2')
+            .replace(/[^a-zA-Z0-9]+/g, '_')
+            .toLowerCase()
+            .replace(/^_+|_+$/g, '');
+        }
         break;
       case 'kebabcase':
-        result = result
-          .trim()
-          .replace(/([a-z])([A-Z])/g, '$1-$2')
-          .replace(/[^a-zA-Z0-9]+/g, '-')
-          .toLowerCase()
-          .replace(/^-+|-+$/g, '');
+        if (typeof result === 'string') {
+          result = result
+            .trim()
+            .replace(/([a-z])([A-Z])/g, '$1-$2')
+            .replace(/[^a-zA-Z0-9]+/g, '-')
+            .toLowerCase()
+            .replace(/^-+|-+$/g, '');
+        }
         break;
       case 'titlecase':
-        result = result
-          .trim()
-          .replace(/([a-z])([A-Z])/g, '$1 $2')
-          .replace(/[^a-zA-Z0-9]+/g, ' ')
-          .replace(/\b([a-z])/g, (_, chr) => chr.toUpperCase())
-          .trim();
+        if (typeof result === 'string') {
+          result = result
+            .trim()
+            .replace(/([a-z])([A-Z])/g, '$1 $2')
+            .replace(/[^a-zA-Z0-9]+/g, ' ')
+            .replace(/\b([a-z])/g, (_, chr) => chr.toUpperCase())
+            .trim();
+        }
+        break;
+      case 'json':
+        result = JSON.stringify(result, null, 2);
         break;
     }
   }
