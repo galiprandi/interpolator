@@ -51,3 +51,7 @@
 ## 2026-06-25 - [Utility-Driven Data Presentation]
 **Learning:** Users often need minor data formatting (joining lists, pluralization, rounding numbers) that doesn't justify a new dependency or complex backend preprocessing. Adding lightweight, type-guarded transforms directly to the core resolution engine provides high value with negligible overhead.
 **Pattern:** Implement "micro-transforms" like `join`, `plural`, and `round` with defensive type checking. This ensures the template engine remains robust while offering flexible presentation logic for various data types (arrays, numbers, strings).
+
+## 2026-06-30 - [Numeric Math Transforms]
+**Learning:** Providing basic math operations (floor, ceil, abs) alongside rounding allows users to handle financial or statistical data presentation directly in templates without upstream modification.
+**Pattern:** Use type-guarded `Math` function wrappers to extend the transformation engine safely for numeric data types.
