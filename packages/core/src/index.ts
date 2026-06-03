@@ -109,6 +109,9 @@ export function applyTransforms(value: any, transforms: string[]): any {
       case 'join':
         if (Array.isArray(result)) result = result.join(', ');
         break;
+      case 'unique':
+        if (Array.isArray(result)) result = Array.from(new Set(result));
+        break;
       case 'first':
         if (Array.isArray(result) || typeof result === 'string') {
           result = result.length > 0 ? result[0] : undefined;
