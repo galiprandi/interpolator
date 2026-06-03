@@ -82,6 +82,13 @@ describe('applyTransforms', () => {
     expect(applyTransforms('not an array', ['join'])).toBe('not an array');
   });
 
+  it('should handle unique transformation', () => {
+    expect(applyTransforms(['a', 'b', 'a', 'c', 'b'], ['unique'])).toEqual(['a', 'b', 'c']);
+    expect(applyTransforms([1, 2, 1, 3, 2], ['unique'])).toEqual([1, 2, 3]);
+    expect(applyTransforms([], ['unique'])).toEqual([]);
+    expect(applyTransforms('not an array', ['unique'])).toBe('not an array');
+  });
+
   it('should handle first transformation', () => {
     expect(applyTransforms(['a', 'b', 'c'], ['first'])).toBe('a');
     expect(applyTransforms('hello', ['first'])).toBe('h');
