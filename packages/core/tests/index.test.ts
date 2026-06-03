@@ -118,4 +118,22 @@ describe('applyTransforms', () => {
     expect(applyTransforms(-1.5, ['round'])).toBe(-1); // Math.round(-1.5) is -1
     expect(applyTransforms('not a number', ['round'])).toBe('not a number');
   });
+
+  it('should handle floor transformation', () => {
+    expect(applyTransforms(1.9, ['floor'])).toBe(1);
+    expect(applyTransforms(-1.1, ['floor'])).toBe(-2);
+    expect(applyTransforms('not a number', ['floor'])).toBe('not a number');
+  });
+
+  it('should handle ceil transformation', () => {
+    expect(applyTransforms(1.1, ['ceil'])).toBe(2);
+    expect(applyTransforms(-1.9, ['ceil'])).toBe(-1);
+    expect(applyTransforms('not a number', ['ceil'])).toBe('not a number');
+  });
+
+  it('should handle abs transformation', () => {
+    expect(applyTransforms(-5, ['abs'])).toBe(5);
+    expect(applyTransforms(5, ['abs'])).toBe(5);
+    expect(applyTransforms('not a number', ['abs'])).toBe('not a number');
+  });
 });

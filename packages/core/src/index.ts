@@ -128,6 +128,15 @@ export function applyTransforms(value: any, transforms: string[]): any {
       case 'round':
         if (typeof result === 'number') result = Math.round(result);
         break;
+      case 'floor':
+        if (typeof result === 'number') result = Math.floor(result);
+        break;
+      case 'ceil':
+        if (typeof result === 'number') result = Math.ceil(result);
+        break;
+      case 'abs':
+        if (typeof result === 'number') result = Math.abs(result);
+        break;
     }
   }
   return result;
