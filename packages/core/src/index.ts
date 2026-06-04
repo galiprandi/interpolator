@@ -140,6 +140,35 @@ export function applyTransforms(value: any, transforms: string[]): any {
       case 'abs':
         if (typeof result === 'number') result = Math.abs(result);
         break;
+      case 'reverse':
+        if (typeof result === 'string') {
+          result = [...result].reverse().join('');
+        } else if (Array.isArray(result)) {
+          result = [...result].reverse();
+        }
+        break;
+      case 'sort':
+        if (Array.isArray(result)) {
+          result = [...result].sort();
+        }
+        break;
+      case 'compact':
+        if (Array.isArray(result)) {
+          result = result.filter((item) => item !== null && item !== undefined && item !== '');
+        }
+        break;
+      case 'sum':
+        if (Array.isArray(result)) {
+          const numbers = result.filter((item) => typeof item === 'number');
+          result = numbers.length > 0 ? numbers.reduce((a, b) => a + b, 0) : 0;
+        }
+        break;
+      case 'avg':
+        if (Array.isArray(result)) {
+          const numbers = result.filter((item) => typeof item === 'number');
+          result = numbers.length > 0 ? numbers.reduce((a, b) => a + b, 0) / numbers.length : 0;
+        }
+        break;
     }
   }
   return result;

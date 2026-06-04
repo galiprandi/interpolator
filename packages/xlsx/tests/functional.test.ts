@@ -901,5 +901,31 @@ describe('interpolateXlsx - functional', () => {
       expect(ws.getCell('A1').value).toBe('SPARK');
       expect(ws.getCell('A2').value).toBe('AGENT');
     });
+
+    it('should support array aggregation and manipulation transforms', async () => {
+      const template = await buildTemplateBuffer((wb) => {
+        const ws = wb.addWorksheet('Sheet1');
+        ws.getCell('A1').value = 'Sum: {{numbers | sum}}';
+        ws.getCell('A2').value = 'Avg: {{numbers | avg}}';
+        ws.getCell('A3').value = 'Sorted: {{tags | sort | join}}';
+        ws.getCell('A4').value = 'Reversed: {{tags | reverse | join}}';
+        ws.getCell('A5').value = 'Compacted: {{mixed | compact | join}}';
+      });
+
+      const data = {
+        numbers: [10, 20, 30, 40],
+        tags: ['c', 'a', 'b'],
+        mixed: ['first', null, 'second', '', undefined, 'third'],
+      };
+
+      const result = await interpolateXlsx({ template, data });
+      const ws = await loadWorksheetFromResult(result, 'Sheet1');
+
+      expect(ws.getCell('A1').value).toBe('Sum: 100');
+      expect(ws.getCell('A2').value).toBe('Avg: 25');
+      expect(ws.getCell('A3').value).toBe('Sorted: a, b, c');
+      expect(ws.getCell('A4').value).toBe('Reversed: b, a, c');
+      expect(ws.getCell('A5').value).toBe('Compacted: first, second, third');
+    });
   });
 });

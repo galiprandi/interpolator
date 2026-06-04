@@ -143,4 +143,41 @@ describe('applyTransforms', () => {
     expect(applyTransforms(5, ['abs'])).toBe(5);
     expect(applyTransforms('not a number', ['abs'])).toBe('not a number');
   });
+
+  it('should handle reverse transformation', () => {
+    expect(applyTransforms('hello', ['reverse'])).toBe('olleh');
+    expect(applyTransforms('💩', ['reverse'])).toBe('💩'); // Unicode surrogate pairs (U+1F4A9)
+    expect(applyTransforms(['a', 'b', 'c'], ['reverse'])).toEqual(['c', 'b', 'a']);
+    expect(applyTransforms([], ['reverse'])).toEqual([]);
+    expect(applyTransforms(123, ['reverse'])).toBe(123);
+  });
+
+  it('should handle sort transformation', () => {
+    expect(applyTransforms(['c', 'a', 'b'], ['sort'])).toEqual(['a', 'b', 'c']);
+    expect(applyTransforms([3, 1, 2], ['sort'])).toEqual([1, 2, 3]);
+    expect(applyTransforms([], ['sort'])).toEqual([]);
+    expect(applyTransforms('not an array', ['sort'])).toBe('not an array');
+  });
+
+  it('should handle compact transformation', () => {
+    expect(applyTransforms(['a', null, 'b', undefined, '', 'c'], ['compact'])).toEqual(['a', 'b', 'c']);
+    expect(applyTransforms([1, 0, false, null], ['compact'])).toEqual([1, 0, false]);
+    expect(applyTransforms([], ['compact'])).toEqual([]);
+  });
+
+  it('should handle sum transformation', () => {
+    expect(applyTransforms([1, 2, 3, 4], ['sum'])).toBe(10);
+    expect(applyTransforms([1, 'a', 2, null, 3], ['sum'])).toBe(6);
+    expect(applyTransforms([], ['sum'])).toBe(0);
+    expect(applyTransforms(['a', 'b'], ['sum'])).toBe(0);
+    expect(applyTransforms('not an array', ['sum'])).toBe('not an array');
+  });
+
+  it('should handle avg transformation', () => {
+    expect(applyTransforms([1, 2, 3, 4], ['avg'])).toBe(2.5);
+    expect(applyTransforms([1, 'a', 2, null, 3], ['avg'])).toBe(2); // (1+2+3)/3 = 2
+    expect(applyTransforms([], ['avg'])).toBe(0);
+    expect(applyTransforms(['a', 'b'], ['avg'])).toBe(0);
+    expect(applyTransforms('not an array', ['avg'])).toBe('not an array');
+  });
 });
