@@ -59,3 +59,7 @@
 ## 2026-06-30 - [Numeric Math Transforms]
 **Learning:** Providing basic math operations (floor, ceil, abs) alongside rounding allows users to handle financial or statistical data presentation directly in templates without upstream modification.
 **Pattern:** Use type-guarded `Math` function wrappers to extend the transformation engine safely for numeric data types.
+
+## 2026-07-10 - [Conditional Logic and Array Extremes]
+**Learning:** Adding `empty` and `notempty` transforms simplifies declarative conditional rendering (like hiding "No results" sections) without requiring backend data preprocessing. Providing `min` and `max` for arrays allows for quick data insights directly in the template.
+**Pattern:** Implement comprehensive emptiness checks (null, undefined, '', []) as a single transform. For array extremes, ensure robust numeric filtering to handle mixed-type arrays gracefully.

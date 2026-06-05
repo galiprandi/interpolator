@@ -180,4 +180,49 @@ describe('applyTransforms', () => {
     expect(applyTransforms([], ['avg'])).toBe(0);
     expect(applyTransforms('not an array', ['avg'])).toBe('not an array');
   });
+
+  it('should handle min transformation', () => {
+    expect(applyTransforms([1, 2, 3], ['min'])).toBe(1);
+    expect(applyTransforms(['1', '2', '3'], ['min'])).toBe(1);
+    expect(applyTransforms([10, -5, 2], ['min'])).toBe(-5);
+    expect(applyTransforms([], ['min'])).toBeUndefined();
+    expect(applyTransforms('not an array', ['min'])).toBe('not an array');
+  });
+
+  it('should handle max transformation', () => {
+    expect(applyTransforms([1, 2, 3], ['max'])).toBe(3);
+    expect(applyTransforms(['1', '2', '3'], ['max'])).toBe(3);
+    expect(applyTransforms([10, -5, 2], ['max'])).toBe(10);
+    expect(applyTransforms([], ['max'])).toBeUndefined();
+    expect(applyTransforms('not an array', ['max'])).toBe('not an array');
+  });
+
+  it('should handle empty transformation', () => {
+    expect(applyTransforms('', ['empty'])).toBe(true);
+    expect(applyTransforms([], ['empty'])).toBe(true);
+    expect(applyTransforms(null, ['empty'])).toBe(true);
+    expect(applyTransforms(undefined, ['empty'])).toBe(true);
+    expect(applyTransforms('hello', ['empty'])).toBe(false);
+    expect(applyTransforms([1], ['empty'])).toBe(false);
+    expect(applyTransforms(0, ['empty'])).toBe(false);
+  });
+
+  it('should handle notempty transformation', () => {
+    expect(applyTransforms('', ['notempty'])).toBe(false);
+    expect(applyTransforms([], ['notempty'])).toBe(false);
+    expect(applyTransforms(null, ['notempty'])).toBe(false);
+    expect(applyTransforms(undefined, ['notempty'])).toBe(false);
+    expect(applyTransforms('hello', ['notempty'])).toBe(true);
+    expect(applyTransforms([1], ['notempty'])).toBe(true);
+    expect(applyTransforms(0, ['notempty'])).toBe(true);
+  });
+
+  it('should handle boolean transformation', () => {
+    expect(applyTransforms(1, ['boolean'])).toBe(true);
+    expect(applyTransforms(0, ['boolean'])).toBe(false);
+    expect(applyTransforms('hello', ['boolean'])).toBe(true);
+    expect(applyTransforms('', ['boolean'])).toBe(false);
+    expect(applyTransforms([], ['boolean'])).toBe(true);
+    expect(applyTransforms(null, ['boolean'])).toBe(false);
+  });
 });

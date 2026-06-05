@@ -171,6 +171,36 @@ export function applyTransforms(value: any, transforms: string[]): any {
           result = nums.length > 0 ? nums.reduce((a, b) => a + b, 0) / nums.length : 0;
         }
         break;
+      case 'min':
+        if (Array.isArray(result)) {
+          const nums = result.map(Number).filter((n) => !Number.isNaN(n));
+          result = nums.length > 0 ? Math.min(...nums) : undefined;
+        }
+        break;
+      case 'max':
+        if (Array.isArray(result)) {
+          const nums = result.map(Number).filter((n) => !Number.isNaN(n));
+          result = nums.length > 0 ? Math.max(...nums) : undefined;
+        }
+        break;
+      case 'empty':
+        result =
+          result === null ||
+          result === undefined ||
+          result === '' ||
+          (Array.isArray(result) && result.length === 0);
+        break;
+      case 'notempty':
+        result = !(
+          result === null ||
+          result === undefined ||
+          result === '' ||
+          (Array.isArray(result) && result.length === 0)
+        );
+        break;
+      case 'boolean':
+        result = Boolean(result);
+        break;
     }
   }
   return result;
