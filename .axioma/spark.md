@@ -40,6 +40,10 @@
 **Learning:** Consolidating marker resolution into a single context-aware function ('resolveInternal') significantly simplifies the interpolation engine. It allows for consistent behavior between root-level and array-level markers, and makes it trivial to add new metadata markers like $hour or $isHeader.
 **Pattern:** Pass a rich 'context' object (containing sheet, row, col, index, length, etc.) through the resolution chain to enable powerful, context-sensitive markers without complicating the user's data schema.
 
+## 2026-07-05 - [Advanced Collection and String Transforms]
+**Learning:** For template authors, basic collection operations like `reverse`, `sort`, and `compact` are essential for data presentation without requiring backend changes. Additionally, providing `sum` and `avg` aggregations directly in the template allows for quick report generation from raw data.
+**Pattern:** When implementing string/array transformations, always use non-mutating methods (like `[...arr].reverse()`) and ensure Unicode safety for strings using the spread operator. Robust numeric aggregations should gracefully handle non-numeric data to prevent template crashes.
+
 ## 2026-05-31 - [Piped Transformations for Template Markers]
 **Learning:** Adding a pipe operator (`|`) for string transformations (upper, lower, capitalize, trim, camelCase) provides users with powerful formatting capabilities directly in the template, reducing the need for data preprocessing. Chaining these transforms increases flexibility.
 **Pattern:** Decouple path resolution from value transformation. Resolve the value first, then apply a series of transformations. This allows the same transformation logic to be reused across different marker types (interpolation and array expansion) and data sources (main data and fallbacks).

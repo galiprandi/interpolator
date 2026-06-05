@@ -140,6 +140,37 @@ export function applyTransforms(value: any, transforms: string[]): any {
       case 'abs':
         if (typeof result === 'number') result = Math.abs(result);
         break;
+      case 'reverse':
+        if (Array.isArray(result)) {
+          result = [...result].reverse();
+        } else if (typeof result === 'string') {
+          result = [...result].reverse().join('');
+        }
+        break;
+      case 'sort':
+        if (Array.isArray(result)) {
+          result = [...result].sort();
+        }
+        break;
+      case 'compact':
+        if (Array.isArray(result)) {
+          result = result.filter((item) => item !== null && item !== undefined && item !== '');
+        }
+        break;
+      case 'sum':
+        if (Array.isArray(result)) {
+          result = result.reduce((acc, item) => {
+            const num = Number(item);
+            return Number.isNaN(num) ? acc : acc + num;
+          }, 0);
+        }
+        break;
+      case 'avg':
+        if (Array.isArray(result)) {
+          const nums = result.map(Number).filter((n) => !Number.isNaN(n));
+          result = nums.length > 0 ? nums.reduce((a, b) => a + b, 0) / nums.length : 0;
+        }
+        break;
     }
   }
   return result;

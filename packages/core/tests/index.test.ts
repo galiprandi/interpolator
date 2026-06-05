@@ -143,4 +143,41 @@ describe('applyTransforms', () => {
     expect(applyTransforms(5, ['abs'])).toBe(5);
     expect(applyTransforms('not a number', ['abs'])).toBe('not a number');
   });
+
+  it('should handle reverse transformation', () => {
+    expect(applyTransforms(['a', 'b', 'c'], ['reverse'])).toEqual(['c', 'b', 'a']);
+    expect(applyTransforms('hello', ['reverse'])).toBe('olleh');
+    expect(applyTransforms([], ['reverse'])).toEqual([]);
+    expect(applyTransforms('', ['reverse'])).toBe('');
+    expect(applyTransforms(123, ['reverse'])).toBe(123);
+  });
+
+  it('should handle sort transformation', () => {
+    expect(applyTransforms(['c', 'a', 'b'], ['sort'])).toEqual(['a', 'b', 'c']);
+    expect(applyTransforms([3, 1, 2], ['sort'])).toEqual([1, 2, 3]);
+    expect(applyTransforms([], ['sort'])).toEqual([]);
+    expect(applyTransforms('not an array', ['sort'])).toBe('not an array');
+  });
+
+  it('should handle compact transformation', () => {
+    expect(applyTransforms(['a', '', null, 'b', undefined, 'c'], ['compact'])).toEqual(['a', 'b', 'c']);
+    expect(applyTransforms([], ['compact'])).toEqual([]);
+    expect(applyTransforms('not an array', ['compact'])).toBe('not an array');
+  });
+
+  it('should handle sum transformation', () => {
+    expect(applyTransforms([1, 2, 3], ['sum'])).toBe(6);
+    expect(applyTransforms(['1', '2', '3'], ['sum'])).toBe(6);
+    expect(applyTransforms([1, 'invalid', 2], ['sum'])).toBe(3);
+    expect(applyTransforms([], ['sum'])).toBe(0);
+    expect(applyTransforms('not an array', ['sum'])).toBe('not an array');
+  });
+
+  it('should handle avg transformation', () => {
+    expect(applyTransforms([2, 4, 6], ['avg'])).toBe(4);
+    expect(applyTransforms(['2', '4', '6'], ['avg'])).toBe(4);
+    expect(applyTransforms([2, 'invalid', 4], ['avg'])).toBe(3);
+    expect(applyTransforms([], ['avg'])).toBe(0);
+    expect(applyTransforms('not an array', ['avg'])).toBe('not an array');
+  });
 });
