@@ -198,4 +198,36 @@ describe('applyTransforms', () => {
     expect(applyTransforms(['invalid'], ['max'])).toBeUndefined();
     expect(applyTransforms('not an array', ['max'])).toBe('not an array');
   });
+
+  it('should handle empty transformation', () => {
+    expect(applyTransforms(null, ['empty'])).toBe(true);
+    expect(applyTransforms(undefined, ['empty'])).toBe(true);
+    expect(applyTransforms('', ['empty'])).toBe(true);
+    expect(applyTransforms([], ['empty'])).toBe(true);
+    expect(applyTransforms('hello', ['empty'])).toBe(false);
+    expect(applyTransforms(['a'], ['empty'])).toBe(false);
+    expect(applyTransforms(0, ['empty'])).toBe(false);
+    expect(applyTransforms(false, ['empty'])).toBe(false);
+  });
+
+  it('should handle notempty transformation', () => {
+    expect(applyTransforms(null, ['notempty'])).toBe(false);
+    expect(applyTransforms(undefined, ['notempty'])).toBe(false);
+    expect(applyTransforms('', ['notempty'])).toBe(false);
+    expect(applyTransforms([], ['notempty'])).toBe(false);
+    expect(applyTransforms('hello', ['notempty'])).toBe(true);
+    expect(applyTransforms(['a'], ['notempty'])).toBe(true);
+    expect(applyTransforms(0, ['notempty'])).toBe(true);
+    expect(applyTransforms(false, ['notempty'])).toBe(true);
+  });
+
+  it('should handle boolean transformation', () => {
+    expect(applyTransforms(1, ['boolean'])).toBe(true);
+    expect(applyTransforms(0, ['boolean'])).toBe(false);
+    expect(applyTransforms('hello', ['boolean'])).toBe(true);
+    expect(applyTransforms('', ['boolean'])).toBe(false);
+    expect(applyTransforms(null, ['boolean'])).toBe(false);
+    expect(applyTransforms(undefined, ['boolean'])).toBe(false);
+    expect(applyTransforms([], ['boolean'])).toBe(true); // empty array is truthy in JS
+  });
 });
