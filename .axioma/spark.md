@@ -59,3 +59,7 @@
 ## 2026-06-30 - [Numeric Math Transforms]
 **Learning:** Providing basic math operations (floor, ceil, abs) alongside rounding allows users to handle financial or statistical data presentation directly in templates without upstream modification.
 **Pattern:** Use type-guarded `Math` function wrappers to extend the transformation engine safely for numeric data types.
+
+## 2026-07-10 - [State Validation and Numeric Aggregation Transforms]
+**Learning:** Adding explicit state validation transforms (`empty`, `notempty`, `boolean`) empowers template authors to handle conditional logic and type casting without upstream data changes. Completing the numeric aggregation set with `min` and `max` provides parity with standard spreadsheet functions.
+**Pattern:** Use broad truthiness checks for `empty` (null, undefined, '', empty array) to provide a robust "is this usable?" check for template authors.

@@ -67,7 +67,7 @@ Use `{{path.to.value}}` for values that do not depend on the current row:
 - **Default values**: Use `||` to provide a fallback if a value is missing or null.
   - `{{user.name || N/A}}` -> renders "N/A" if `user.name` is missing or null.
   - `{{user.city || user.backupCity}}` -> tries to resolve `user.backupCity` if `user.city` is not found.
-- **Transforms**: Use the pipe operator `|` to transform values: `{{name | upper}}`. Supported: `upper`/`uppercase`, `lower`/`lowercase`, `capitalize`, `trim`, `camelCase`, `pascalCase`, `snakeCase`, `kebabCase`, `titleCase`, `join`, `unique`, `first`, `last`, `length`, `plural`, `round`, `reverse`, `sort`, `compact`, `sum`, `avg`. You can chain them: `{{title | trim | capitalize}}`.
+- **Transforms**: Use the pipe operator `|` to transform values: `{{name | upper}}`. Supported: `upper`/`uppercase`, `lower`/`lowercase`, `capitalize`, `trim`, `camelCase`, `pascalCase`, `snakeCase`, `kebabCase`, `titleCase`, `join`, `unique`, `first`, `last`, `length`, `plural`, `round`, `reverse`, `sort`, `compact`, `sum`, `avg`, `min`, `max`, `empty`, `notempty`, `boolean`. You can chain them: `{{title | trim | capitalize}}`.
 - If the key (or any intermediate segment) does not exist and no default is provided, the **marker is left as-is**.
 - If the resolved value is `null` or `undefined` and no default is provided, the cell becomes an empty string (`""`).
 
