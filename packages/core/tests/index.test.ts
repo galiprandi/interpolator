@@ -180,4 +180,22 @@ describe('applyTransforms', () => {
     expect(applyTransforms([], ['avg'])).toBe(0);
     expect(applyTransforms('not an array', ['avg'])).toBe('not an array');
   });
+
+  it('should handle min transformation', () => {
+    expect(applyTransforms([2, 4, 1, 6], ['min'])).toBe(1);
+    expect(applyTransforms(['2', '4', '1', '6'], ['min'])).toBe(1);
+    expect(applyTransforms([2, 'invalid', 1], ['min'])).toBe(1);
+    expect(applyTransforms([], ['min'])).toBeUndefined();
+    expect(applyTransforms(['invalid'], ['min'])).toBeUndefined();
+    expect(applyTransforms('not an array', ['min'])).toBe('not an array');
+  });
+
+  it('should handle max transformation', () => {
+    expect(applyTransforms([2, 4, 1, 6], ['max'])).toBe(6);
+    expect(applyTransforms(['2', '4', '1', '6'], ['max'])).toBe(6);
+    expect(applyTransforms([2, 'invalid', 6], ['max'])).toBe(6);
+    expect(applyTransforms([], ['max'])).toBeUndefined();
+    expect(applyTransforms(['invalid'], ['max'])).toBeUndefined();
+    expect(applyTransforms('not an array', ['max'])).toBe('not an array');
+  });
 });
