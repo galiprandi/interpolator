@@ -183,6 +183,24 @@ export function applyTransforms(value: any, transforms: string[]): any {
           result = nums.length > 0 ? Math.max(...nums) : undefined;
         }
         break;
+      case 'empty':
+        result =
+          result === null ||
+          result === undefined ||
+          result === '' ||
+          (Array.isArray(result) && result.length === 0);
+        break;
+      case 'notempty':
+        result = !(
+          result === null ||
+          result === undefined ||
+          result === '' ||
+          (Array.isArray(result) && result.length === 0)
+        );
+        break;
+      case 'boolean':
+        result = Boolean(result);
+        break;
     }
   }
   return result;
