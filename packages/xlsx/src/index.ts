@@ -87,6 +87,10 @@ function resolveInternal(
             ? ctx.sheetIndex === ctx.totalSheets - 1
             : undefined,
       };
+    case '$isEvenSheet':
+      return { found: true, value: ctx.sheetIndex !== undefined ? (ctx.sheetIndex + 1) % 2 === 0 : undefined };
+    case '$isOddSheet':
+      return { found: true, value: ctx.sheetIndex !== undefined ? (ctx.sheetIndex + 1) % 2 !== 0 : undefined };
     case '$row':
     case '$rowNumber': return { found: true, value: ctx.row };
     case '$col':
@@ -96,13 +100,15 @@ function resolveInternal(
     case '$isEven':
     case '$even':
       if (ctx.index !== undefined) return { found: true, value: (ctx.index + 1) % 2 === 0 };
-      return { found: true, value: ctx.row !== undefined ? ctx.row % 2 === 0 : undefined };
+      if (ctx.row !== undefined) return { found: true, value: ctx.row % 2 === 0 };
+      return { found: true, value: ctx.sheetIndex !== undefined ? (ctx.sheetIndex + 1) % 2 === 0 : undefined };
     case '$isEvenRow':
       return { found: true, value: ctx.row !== undefined ? ctx.row % 2 === 0 : undefined };
     case '$isOdd':
     case '$odd':
       if (ctx.index !== undefined) return { found: true, value: (ctx.index + 1) % 2 !== 0 };
-      return { found: true, value: ctx.row !== undefined ? ctx.row % 2 !== 0 : undefined };
+      if (ctx.row !== undefined) return { found: true, value: ctx.row % 2 !== 0 };
+      return { found: true, value: ctx.sheetIndex !== undefined ? (ctx.sheetIndex + 1) % 2 !== 0 : undefined };
     case '$isOddRow':
       return { found: true, value: ctx.row !== undefined ? ctx.row % 2 !== 0 : undefined };
     case '$isEvenCol':
@@ -147,6 +153,31 @@ function resolveInternal(
   }
 }
 
+function findArrayInPath(
+  fullPath: string,
+  data: any,
+  ctx: any,
+): { arrayPath: string; propertyPath: string; array: any; found: boolean } | null {
+  const parts = fullPath.trim().split('.');
+  for (let i = 1; i <= parts.length; i++) {
+    const arrayPath = parts.slice(0, i).join('.').trim();
+    const { found, value } = resolveWithContext(arrayPath, data, ctx);
+    if (found && (Array.isArray(value) || typeof value === 'boolean')) {
+      return { arrayPath, propertyPath: parts.slice(i).join('.').trim(), array: value, found: true };
+    }
+  }
+
+  // Fallback for backward compatibility: if the first part exists but is not an array,
+  // we still return it so it can throw an error during expansion if it matches the marker.
+  const firstPart = parts[0].trim();
+  const { found, value } = resolveWithContext(firstPart, data, ctx);
+  if (found) {
+    return { arrayPath: firstPart, propertyPath: parts.slice(1).join('.').trim(), array: value, found: true };
+  }
+
+  return null;
+}
+
 export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<Buffer> {
   const { template, data } = options;
   const workbook = new Workbook();
@@ -173,14 +204,15 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
 
       row.eachCell({ includeEmpty: true }, (cell) => {
         if (typeof cell.value === 'string') {
-          // Detect if there are array markers
-          const arrayMatch = cell.value.match(/\[\[\s*([^\].]+)(?:\.[^\]]+)?\s*\]\]/);
-          if (arrayMatch) {
-            const key = arrayMatch[1];
-            if (arrayKey && arrayKey !== key) {
-              throw new Error(`Mixed array keys in row ${rowNumber}: ${arrayKey} vs ${key}`);
+          const matches = cell.value.matchAll(/\[\[\s*([^\]]+)\s*\]\]/g);
+          for (const match of matches) {
+            const res = findArrayInPath(match[1], data, sheetCtx);
+            if (res) {
+              if (arrayKey && arrayKey !== res.arrayPath) {
+                throw new Error(`Mixed array keys in row ${rowNumber}: ${arrayKey} vs ${res.arrayPath}`);
+              }
+              arrayKey = res.arrayPath;
             }
-            arrayKey = key;
           }
         }
       });
@@ -197,8 +229,9 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
     const mergeRanges = getWorksheetMergeRanges(worksheet as any);
 
     for (const { rowNumber, arrayKey } of rowsToExpand) {
-      let array = data[arrayKey];
-      if (array === undefined) {
+      const { found: arrayFound, value: resolvedArray } = resolveWithContext(arrayKey, data, sheetCtx);
+      let array = resolvedArray;
+      if (!arrayFound || array === undefined) {
         continue; // Leave markers untouched
       }
 
@@ -254,17 +287,16 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
             // Styles & validation will be copied below; skip marker interpolation for formulas
           } else if (typeof value === 'string') {
             // Check if it's a single [[ ]] marker to preserve type
-            const singleArMatch = value.match(/^\[\[\s*([^\].\s]+)(?:\.([^\]]+))?\s*\]\]$/);
+            const singleArMatch = value.match(/^\[\[\s*([^\]]+)\s*\]\]$/);
             if (singleArMatch) {
-              const [, arrKey, propPathWithDefault] = singleArMatch;
-              if (arrKey === arrayKey) {
-                if (!propPathWithDefault) {
+              const fullPath = singleArMatch[1].trim();
+              if (fullPath === arrayKey || fullPath.startsWith(arrayKey + '.')) {
+                const propPath = fullPath === arrayKey ? '' : fullPath.slice(arrayKey.length + 1);
+                if (!propPath) {
                   // For boolean-based rows, resolve to empty string
                   value = (isBooleanRow && item && (item as any).__isConditional) ? '' : (item === undefined ? value : item);
                 } else {
-                  // Remove leading dot
-                  const path = propPathWithDefault.startsWith('.') ? propPathWithDefault.slice(1) : propPathWithDefault;
-                  const { found, value: resolved } = resolveWithContext(path, item, {
+                  const { found, value: resolved } = resolveWithContext(propPath, item, {
                     ...sheetCtx,
                     row: newRowNumber,
                     col: colNumber,
@@ -295,18 +327,19 @@ export async function interpolateXlsx(options: InterpolateXlsxOptions): Promise<
             // Final string interpolation for remaining cases
             if (typeof value === 'string') {
               // Array interpolation: [[array.key]] or [[array]]
-              value = value.replace(/\[\[\s*([^\].\s]+)(?:\.([^\]]+))?\s*\]\]/g, (full, arrKey, propPathWithDefault) => {
-                if (arrKey !== arrayKey) return full;
+              value = value.replace(/\[\[\s*([^\]]+)\s*\]\]/g, (full, fullPath) => {
+                const trimmedPath = fullPath.trim();
+                if (trimmedPath !== arrayKey && !trimmedPath.startsWith(arrayKey + '.')) return full;
 
-                if (!propPathWithDefault) {
+                const propPath = trimmedPath === arrayKey ? '' : trimmedPath.slice(arrayKey.length + 1);
+
+                if (!propPath) {
                   // For boolean-based rows, resolve to empty string
                   if (isBooleanRow && item && (item as any).__isConditional) return '';
                   return item == null ? '' : String(item);
                 }
 
-                // Remove leading dot
-                const path = propPathWithDefault.startsWith('.') ? propPathWithDefault.slice(1) : propPathWithDefault;
-                const { found, value: resolved } = resolveWithContext(path, item, {
+                const { found, value: resolved } = resolveWithContext(propPath, item, {
                   ...sheetCtx,
                   row: newRowNumber,
                   col: colNumber,

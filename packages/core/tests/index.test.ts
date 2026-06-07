@@ -20,32 +20,45 @@ describe('applyTransforms', () => {
     expect(applyTransforms('  hello  ', ['trim'])).toBe('hello');
   });
 
-  it('should handle camelcase', () => {
+  it('should handle trimstart', () => {
+    expect(applyTransforms('  hello  ', ['trimstart'])).toBe('hello  ');
+  });
+
+  it('should handle trimend', () => {
+    expect(applyTransforms('  hello  ', ['trimend'])).toBe('  hello');
+  });
+
+  it('should handle camel and camelcase', () => {
+    expect(applyTransforms('hello world', ['camel'])).toBe('helloWorld');
     expect(applyTransforms('hello world', ['camelcase'])).toBe('helloWorld');
     expect(applyTransforms('Hello World', ['camelcase'])).toBe('helloWorld');
     expect(applyTransforms('hello-world', ['camelcase'])).toBe('helloWorld');
     expect(applyTransforms('hello_world', ['camelcase'])).toBe('helloWorld');
   });
 
-  it('should handle pascalcase', () => {
+  it('should handle pascal and pascalcase', () => {
+    expect(applyTransforms('hello world', ['pascal'])).toBe('HelloWorld');
     expect(applyTransforms('hello world', ['pascalcase'])).toBe('HelloWorld');
     expect(applyTransforms('hello-world', ['pascalcase'])).toBe('HelloWorld');
     expect(applyTransforms('hello_world', ['pascalcase'])).toBe('HelloWorld');
   });
 
-  it('should handle snakecase', () => {
+  it('should handle snake and snakecase', () => {
+    expect(applyTransforms('helloWorld', ['snake'])).toBe('hello_world');
     expect(applyTransforms('helloWorld', ['snakecase'])).toBe('hello_world');
     expect(applyTransforms('hello world', ['snakecase'])).toBe('hello_world');
     expect(applyTransforms('hello-world', ['snakecase'])).toBe('hello_world');
   });
 
-  it('should handle kebabcase', () => {
+  it('should handle kebab and kebabcase', () => {
+    expect(applyTransforms('helloWorld', ['kebab'])).toBe('hello-world');
     expect(applyTransforms('helloWorld', ['kebabcase'])).toBe('hello-world');
     expect(applyTransforms('hello world', ['kebabcase'])).toBe('hello-world');
     expect(applyTransforms('hello_world', ['kebabcase'])).toBe('hello-world');
   });
 
-  it('should handle titlecase', () => {
+  it('should handle title and titlecase', () => {
+    expect(applyTransforms('hello world', ['title'])).toBe('Hello World');
     expect(applyTransforms('hello world', ['titlecase'])).toBe('Hello World');
     expect(applyTransforms('hello-world', ['titlecase'])).toBe('Hello World');
     expect(applyTransforms('hello_world', ['titlecase'])).toBe('Hello World');
@@ -67,6 +80,12 @@ describe('applyTransforms', () => {
     expect(applyTransforms(obj, ['json'])).toBe(JSON.stringify(obj, null, 2));
     expect(applyTransforms([1, 2, 3], ['json'])).toBe(JSON.stringify([1, 2, 3], null, 2));
     expect(applyTransforms('hello', ['json'])).toBe('"hello"');
+  });
+
+  it('should handle lines transformation', () => {
+    expect(applyTransforms("line1\nline2\r\nline3", ['lines'])).toEqual(['line1', 'line2', 'line3']);
+    expect(applyTransforms("single line", ['lines'])).toEqual(['single line']);
+    expect(applyTransforms(123, ['lines'])).toBe(123);
   });
 
   it('should handle chained transformations with json', () => {
