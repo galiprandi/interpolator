@@ -123,7 +123,26 @@ export function applyTransforms(value: any, transforms: string[]): any {
         }
         break;
       case 'length':
-        if (Array.isArray(result) || typeof result === 'string') result = result.length;
+        if (Array.isArray(result) || typeof result === 'string') {
+          result = result.length;
+        } else if (result != null && typeof result === 'object') {
+          result = Object.keys(result).length;
+        }
+        break;
+      case 'keys':
+        if (result != null && typeof result === 'object' && !Array.isArray(result)) {
+          result = Object.keys(result);
+        }
+        break;
+      case 'values':
+        if (result != null && typeof result === 'object' && !Array.isArray(result)) {
+          result = Object.values(result);
+        }
+        break;
+      case 'flat':
+        if (Array.isArray(result)) {
+          result = result.flat();
+        }
         break;
       case 'plural':
         if (typeof result === 'number') result = result === 1 ? '' : 's';

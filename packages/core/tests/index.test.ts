@@ -108,6 +108,29 @@ describe('applyTransforms', () => {
     expect(applyTransforms('hello', ['length'])).toBe(5);
     expect(applyTransforms([], ['length'])).toBe(0);
     expect(applyTransforms('', ['length'])).toBe(0);
+    expect(applyTransforms({ a: 1, b: 2 }, ['length'])).toBe(2);
+    expect(applyTransforms({}, ['length'])).toBe(0);
+  });
+
+  it('should handle keys transformation', () => {
+    expect(applyTransforms({ a: 1, b: 2 }, ['keys'])).toEqual(['a', 'b']);
+    expect(applyTransforms({}, ['keys'])).toEqual([]);
+    expect(applyTransforms(['a', 'b'], ['keys'])).toEqual(['a', 'b']); // should skip arrays
+    expect(applyTransforms('not an object', ['keys'])).toBe('not an object');
+  });
+
+  it('should handle values transformation', () => {
+    expect(applyTransforms({ a: 1, b: 2 }, ['values'])).toEqual([1, 2]);
+    expect(applyTransforms({}, ['values'])).toEqual([]);
+    expect(applyTransforms(['a', 'b'], ['values'])).toEqual(['a', 'b']); // should skip arrays
+    expect(applyTransforms('not an object', ['values'])).toBe('not an object');
+  });
+
+  it('should handle flat transformation', () => {
+    expect(applyTransforms([[1, 2], [3, 4]], ['flat'])).toEqual([1, 2, 3, 4]);
+    expect(applyTransforms([1, [2, [3]]], ['flat'])).toEqual([1, 2, [3]]);
+    expect(applyTransforms([], ['flat'])).toEqual([]);
+    expect(applyTransforms('not an array', ['flat'])).toBe('not an array');
   });
 
   it('should handle plural transformation', () => {
