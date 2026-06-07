@@ -63,3 +63,7 @@
 ## 2026-07-10 - [Numeric Extremes and Nullability]
 **Learning:** When implementing numeric aggregations like `min` and `max`, returning `undefined` for empty or non-numeric collections is more accurate than defaulting to `0`. This allows template authors to use default values (e.g., `{{ items | min || N/A }}`) to handle missing data explicitly.
 **Pattern:** Prefer `undefined` over fallback values for collection reductions when the identity element (like 0 for sum) could be misinterpreted as a valid result from the data.
+
+## 2026-07-15 - [Object and Array Manipulation Transforms]
+**Learning:** Providing basic object introspection (`keys`, `values`) and array manipulation (`flat`) transforms allows users to handle more complex data structures directly in templates. Updating `length` to support objects makes the API more consistent across different data types.
+**Pattern:** Extend core utilities to support both arrays and objects where it makes sense (like `length`), and provide specific transforms for type-specific operations that follow standard JavaScript behavior.
