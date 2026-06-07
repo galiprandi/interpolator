@@ -55,6 +55,13 @@ export function applyTransforms(value: any, transforms: string[]): any {
       case 'trim':
         if (typeof result === 'string') result = result.trim();
         break;
+      case 'trimstart':
+        if (typeof result === 'string') result = result.trimStart();
+        break;
+      case 'trimend':
+        if (typeof result === 'string') result = result.trimEnd();
+        break;
+      case 'camel':
       case 'camelcase':
         if (typeof result === 'string') {
           result = result
@@ -64,6 +71,7 @@ export function applyTransforms(value: any, transforms: string[]): any {
             .replace(/^[A-Z]/, (chr) => chr.toLowerCase());
         }
         break;
+      case 'pascal':
       case 'pascalcase':
         if (typeof result === 'string') {
           result = result
@@ -73,6 +81,7 @@ export function applyTransforms(value: any, transforms: string[]): any {
             .replace(/^[a-z]/, (chr) => chr.toUpperCase());
         }
         break;
+      case 'snake':
       case 'snakecase':
         if (typeof result === 'string') {
           result = result
@@ -83,6 +92,7 @@ export function applyTransforms(value: any, transforms: string[]): any {
             .replace(/^_+|_+$/g, '');
         }
         break;
+      case 'kebab':
       case 'kebabcase':
         if (typeof result === 'string') {
           result = result
@@ -93,6 +103,7 @@ export function applyTransforms(value: any, transforms: string[]): any {
             .replace(/^-+|-+$/g, '');
         }
         break;
+      case 'title':
       case 'titlecase':
         if (typeof result === 'string') {
           result = result
@@ -105,6 +116,9 @@ export function applyTransforms(value: any, transforms: string[]): any {
         break;
       case 'json':
         result = JSON.stringify(result, null, 2);
+        break;
+      case 'lines':
+        if (typeof result === 'string') result = result.split(/\r?\n/);
         break;
       case 'join':
         if (Array.isArray(result)) result = result.join(', ');

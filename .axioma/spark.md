@@ -60,6 +60,10 @@
 **Learning:** Providing basic math operations (floor, ceil, abs) alongside rounding allows users to handle financial or statistical data presentation directly in templates without upstream modification.
 **Pattern:** Use type-guarded `Math` function wrappers to extend the transformation engine safely for numeric data types.
 
+## 2025-05-20 - [Nested Array Resolution & Multi-line Row Expansion]
+**Learning:** Decoupling array identification from simple root keys enables much more powerful templates. Supporting nested paths (e.g., `[[order.items.name]]`) and transformations (e.g., `[[items | reverse]]`) in expansion markers allows template authors to reshape data for display without backend changes. Adding a `lines` transform to split strings into arrays further bridges the gap between raw text data and tabular document structure.
+**Pattern:** Implement a path-probing utility (like `findArrayInPath`) that iteratively checks segments of a path to find the collection context. This provides a natural, intuitive syntax for nested data while maintaining backward compatibility.
+
 ## 2026-07-10 - [Numeric Extremes and Nullability]
 **Learning:** When implementing numeric aggregations like `min` and `max`, returning `undefined` for empty or non-numeric collections is more accurate than defaulting to `0`. This allows template authors to use default values (e.g., `{{ items | min || N/A }}`) to handle missing data explicitly.
 **Pattern:** Prefer `undefined` over fallback values for collection reductions when the identity element (like 0 for sum) could be misinterpreted as a valid result from the data.
