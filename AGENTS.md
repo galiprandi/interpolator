@@ -119,7 +119,7 @@ After interpolation with the data above, the result would be:
 - **Type Preservation**: If the cell contains *only* the `{{key}}` marker, the resulting cell will have the same type as the data (e.g., Number, Date, Boolean).
 - Supports nested paths: `{{user.profile.email}}`.
 - **Default values**: `{{path || fallback}}`. Fallback can be a literal string or another path.
-- **Transforms**: Use the pipe operator `|` to transform values: `{{name | upper}}`. Supported: `upper`/`uppercase`, `lower`/`lowercase`, `capitalize`, `trim`, `camelCase`, `pascalCase`, `snakeCase`, `kebabCase`, `titleCase`, `join`, `unique`, `first`, `last`, `length`, `plural`, `round`, `reverse`, `sort`, `compact`, `sum`, `avg`, `min`, `max`, `empty`, `notempty`, `boolean`. You can chain them: `{{title | trim | capitalize}}`.
+- **Transforms**: Use the pipe operator `|` to transform values: `{{name | upper}}`. Supported: `upper`/`uppercase`, `lower`/`lowercase`, `capitalize`, `trim`, `camelCase`, `pascalCase`, `snakeCase`, `kebabCase`, `titleCase`, `initials`, `join`, `unique`, `first`, `last`, `length`, `plural`, `round`, `reverse`, `sort`, `compact`, `sum`, `avg`, `min`, `max`, `empty`, `notempty`, `boolean`. You can chain them: `{{title | trim | capitalize}}`.
 - If the key is missing and no default is provided, the marker remains in the cell as-is.
 - If the value is `null` or `undefined` and no default is provided, the cell becomes empty (`""`).
 

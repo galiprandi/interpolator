@@ -66,6 +66,16 @@ describe('applyTransforms', () => {
     expect(applyTransforms('  hello   world  ', ['titlecase'])).toBe('Hello World');
   });
 
+  it('should handle initials', () => {
+    expect(applyTransforms('John Doe', ['initials'])).toBe('JD');
+    expect(applyTransforms('spark agent', ['initials'])).toBe('SA');
+    expect(applyTransforms('Single', ['initials'])).toBe('S');
+    expect(applyTransforms('  multi   space  ', ['initials'])).toBe('MS');
+    expect(applyTransforms('', ['initials'])).toBe('');
+    expect(applyTransforms(null, ['initials'])).toBe(null);
+    expect(applyTransforms(123, ['initials'])).toBe(123);
+  });
+
   it('should handle chained transformations', () => {
     expect(applyTransforms('  hello world  ', ['trim', 'camelcase', 'capitalize'])).toBe('HelloWorld');
   });

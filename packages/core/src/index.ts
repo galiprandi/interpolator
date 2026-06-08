@@ -114,6 +114,16 @@ export function applyTransforms(value: any, transforms: string[]): any {
             .trim();
         }
         break;
+      case 'initials':
+        if (typeof result === 'string') {
+          result = result
+            .trim()
+            .split(/\s+/)
+            .filter((word) => word.length > 0)
+            .map((word) => word.charAt(0).toUpperCase())
+            .join('');
+        }
+        break;
       case 'json':
         result = JSON.stringify(result, null, 2);
         break;
