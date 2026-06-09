@@ -14,6 +14,7 @@ describe('applyTransforms', () => {
 
   it('should handle capitalize', () => {
     expect(applyTransforms('hello', ['capitalize'])).toBe('Hello');
+    expect(applyTransforms('💩💩💩', ['capitalize'])).toBe('💩💩💩');
   });
 
   it('should handle trim', () => {
@@ -66,6 +67,15 @@ describe('applyTransforms', () => {
     expect(applyTransforms('  hello   world  ', ['titlecase'])).toBe('Hello World');
   });
 
+  it('should handle initials transformation', () => {
+    expect(applyTransforms('spark feature agent', ['initials'])).toBe('SFA');
+    expect(applyTransforms('  hello   world  ', ['initials'])).toBe('HW');
+    expect(applyTransforms('single', ['initials'])).toBe('S');
+    expect(applyTransforms('💩 emoji test', ['initials'])).toBe('💩ET');
+    expect(applyTransforms('', ['initials'])).toBe('');
+    expect(applyTransforms(null, ['initials'])).toBe(null);
+  });
+
   it('should handle chained transformations', () => {
     expect(applyTransforms('  hello world  ', ['trim', 'camelcase', 'capitalize'])).toBe('HelloWorld');
   });
@@ -111,6 +121,7 @@ describe('applyTransforms', () => {
   it('should handle first transformation', () => {
     expect(applyTransforms(['a', 'b', 'c'], ['first'])).toBe('a');
     expect(applyTransforms('hello', ['first'])).toBe('h');
+    expect(applyTransforms('💩💩💩', ['first'])).toBe('💩');
     expect(applyTransforms([], ['first'])).toBeUndefined();
     expect(applyTransforms('', ['first'])).toBeUndefined();
   });
@@ -118,6 +129,7 @@ describe('applyTransforms', () => {
   it('should handle last transformation', () => {
     expect(applyTransforms(['a', 'b', 'c'], ['last'])).toBe('c');
     expect(applyTransforms('hello', ['last'])).toBe('o');
+    expect(applyTransforms('abc💩', ['last'])).toBe('💩');
     expect(applyTransforms([], ['last'])).toBeUndefined();
     expect(applyTransforms('', ['last'])).toBeUndefined();
   });

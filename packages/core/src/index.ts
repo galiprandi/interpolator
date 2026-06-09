@@ -50,7 +50,10 @@ export function applyTransforms(value: any, transforms: string[]): any {
         if (typeof result === 'string') result = result.toLowerCase();
         break;
       case 'capitalize':
-        if (typeof result === 'string') result = result.charAt(0).toUpperCase() + result.slice(1);
+        if (typeof result === 'string' && result.length > 0) {
+          const chars = [...result];
+          result = chars[0].toUpperCase() + chars.slice(1).join('');
+        }
         break;
       case 'trim':
         if (typeof result === 'string') result = result.trim();
@@ -114,6 +117,16 @@ export function applyTransforms(value: any, transforms: string[]): any {
             .trim();
         }
         break;
+      case 'initials':
+        if (typeof result === 'string') {
+          result = result
+            .trim()
+            .split(/\s+/)
+            .filter(Boolean)
+            .map((word) => [...word][0].toUpperCase())
+            .join('');
+        }
+        break;
       case 'json':
         result = JSON.stringify(result, null, 2);
         break;
@@ -127,13 +140,18 @@ export function applyTransforms(value: any, transforms: string[]): any {
         if (Array.isArray(result)) result = Array.from(new Set(result));
         break;
       case 'first':
-        if (Array.isArray(result) || typeof result === 'string') {
+        if (Array.isArray(result)) {
           result = result.length > 0 ? result[0] : undefined;
+        } else if (typeof result === 'string') {
+          result = result.length > 0 ? [...result][0] : undefined;
         }
         break;
       case 'last':
-        if (Array.isArray(result) || typeof result === 'string') {
+        if (Array.isArray(result)) {
           result = result.length > 0 ? result[result.length - 1] : undefined;
+        } else if (typeof result === 'string') {
+          const chars = [...result];
+          result = chars.length > 0 ? chars[chars.length - 1] : undefined;
         }
         break;
       case 'length':
