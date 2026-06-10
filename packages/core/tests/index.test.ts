@@ -312,4 +312,35 @@ describe("applyTransforms", () => {
 		expect(applyTransforms(undefined, ["boolean"])).toBe(false);
 		expect(applyTransforms([], ["boolean"])).toBe(true); // empty array is truthy in JS
 	});
+
+	it("should handle number transformation", () => {
+		expect(applyTransforms("123", ["number"])).toBe(123);
+		expect(applyTransforms("123.45", ["number"])).toBe(123.45);
+		expect(applyTransforms(true, ["number"])).toBe(1);
+		expect(applyTransforms(false, ["number"])).toBe(0);
+		expect(applyTransforms("invalid", ["number"])).toBeNaN();
+	});
+
+	it("should handle string transformation", () => {
+		expect(applyTransforms(123, ["string"])).toBe("123");
+		expect(applyTransforms(true, ["string"])).toBe("true");
+		expect(applyTransforms({ a: 1 }, ["string"])).toBe("[object Object]");
+		expect(applyTransforms(null, ["string"])).toBe("null");
+	});
+
+	it("should handle date transformations", () => {
+		const date = new Date("2025-05-15T14:30:45Z");
+		// Now using UTC as implemented in the core
+		expect(applyTransforms(date, ["year"])).toBe(date.getUTCFullYear());
+		expect(applyTransforms(date, ["month"])).toBe(date.getUTCMonth() + 1);
+		expect(applyTransforms(date, ["day"])).toBe(date.getUTCDate());
+		expect(applyTransforms(date, ["hour"])).toBe(date.getUTCHours());
+		expect(applyTransforms(date, ["minute"])).toBe(date.getUTCMinutes());
+		expect(applyTransforms(date, ["second"])).toBe(date.getUTCSeconds());
+		expect(applyTransforms(date, ["weekday"])).toBe(date.getUTCDay());
+
+		// Should return original value if not a Date
+		expect(applyTransforms("2025-05-15", ["year"])).toBe("2025-05-15");
+		expect(applyTransforms(123, ["month"])).toBe(123);
+	});
 });
