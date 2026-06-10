@@ -32,7 +32,7 @@ Used for static values that appear once in your document (e.g., a customer name,
 - **Nested Paths**: Supports dot notation like `{{user.profile.name}}`.
 - **Missing Data**: If a key is missing, the marker `{{key}}` stays in the cell for easier debugging.
 - **Null Values**: If a value is `null` or `undefined`, the cell is cleared.
-- **Transforms**: Use the pipe operator `|` to transform values: `{{name | upper}}`. Supported: `upper`, `lower`, `capitalize`, `trim`, `camelCase`, `pascalCase`, `snakeCase`, `kebabCase`, `titleCase`, `join`, `unique`, `first`, `last`, `length`, `plural`, `round`, `floor`, `ceil`, `abs`, `reverse`, `sort`, `compact`, `sum`, `avg`, `min`, `max`, `year`, `month`, `day`, `hour`, `minute`, `second`, `weekday`, `empty`, `notempty`, `boolean`, `number`, `string`. You can chain them: `{{title | trim | capitalize}}`.
+- **Transforms**: Use the pipe operator `|` to transform values: `{{name | upper}}`. Supported: `upper`, `lower`, `capitalize`, `trim`, `camelCase`, `pascalCase`, `snakeCase`, `kebabCase`, `titleCase`, `join`, `unique`, `first`, `last`, `length`, `plural`, `round`, `floor`, `ceil`, `abs`, `range`, `reverse`, `sort`, `compact`, `sum`, `avg`, `min`, `max`, `year`, `month`, `day`, `hour`, `minute`, `second`, `weekday`, `empty`, `notempty`, `boolean`, `number`, `string`. You can chain them: `{{title | trim | capitalize}}`.
 
 #### Array-Based Row Expansion: `[[array.key]]`
 Used to repeat an entire row for every item in an array.
