@@ -220,6 +220,15 @@ describe("applyTransforms", () => {
 		expect(applyTransforms("not a number", ["abs"])).toBe("not a number");
 	});
 
+	it("should handle range transformation", () => {
+		expect(applyTransforms(3, ["range"])).toEqual([1, 2, 3]);
+		expect(applyTransforms(5.7, ["range"])).toEqual([1, 2, 3, 4, 5]);
+		expect(applyTransforms(1, ["range"])).toEqual([1]);
+		expect(applyTransforms(0, ["range"])).toEqual([]);
+		expect(applyTransforms(-5, ["range"])).toEqual([]);
+		expect(applyTransforms("not a number", ["range"])).toBe("not a number");
+	});
+
 	it("should handle reverse transformation", () => {
 		expect(applyTransforms(["a", "b", "c"], ["reverse"])).toEqual([
 			"c",

@@ -901,5 +901,23 @@ describe('interpolateXlsx - functional', () => {
       expect(ws.getCell('A1').value).toBe('SPARK');
       expect(ws.getCell('A2').value).toBe('AGENT');
     });
+
+    it('should support range transform for row expansion', async () => {
+      const template = await buildTemplateBuffer((wb) => {
+        const ws = wb.addWorksheet('Sheet1');
+        ws.getCell('A1').value = '[[count | range]]';
+      });
+
+      const data = { count: 3 };
+      const result = await interpolateXlsx({ template, data });
+      const wb = new Workbook();
+      await wb.xlsx.load(result as any);
+      const ws = wb.getWorksheet('Sheet1');
+
+      expect(ws?.getCell('A1').value).toBe(1);
+      expect(ws?.getCell('A2').value).toBe(2);
+      expect(ws?.getCell('A3').value).toBe(3);
+      expect(ws?.getRow(4).getCell(1).value).toBeNull();
+    });
   });
 });

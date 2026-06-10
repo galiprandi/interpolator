@@ -201,6 +201,12 @@ export function applyTransforms(value: any, transforms: string[]): any {
 			case "abs":
 				if (typeof result === "number") result = Math.abs(result);
 				break;
+			case "range":
+				if (typeof result === "number") {
+					const n = Math.floor(result);
+					result = n > 0 ? Array.from({ length: n }, (_, i) => i + 1) : [];
+				}
+				break;
 			case "reverse":
 				if (Array.isArray(result)) {
 					result = [...result].reverse();

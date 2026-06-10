@@ -75,3 +75,7 @@
 ## 2026-07-15 - [Object and Array Manipulation Transforms]
 **Learning:** Providing basic object introspection (`keys`, `values`) and array manipulation (`flat`) transforms allows users to handle more complex data structures directly in templates. Updating `length` to support objects makes the API more consistent across different data types.
 **Pattern:** Extend core utilities to support both arrays and objects where it makes sense (like `length`), and provide specific transforms for type-specific operations that follow standard JavaScript behavior.
+
+## 2026-07-25 - [Sequence Generation via Range Transform]
+**Learning:** Providing a way to generate sequences directly from a number (via `range`) allows users to create dynamic row counts or lists without needing to pre-calculate arrays in their data source. This is particularly useful for things like "Top N" lists or fixed-size forms.
+**Pattern:** Use simple, numeric-to-collection transforms to bridge the gap between scalar data and structural document requirements (like row expansion).
