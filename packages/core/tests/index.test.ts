@@ -171,6 +171,17 @@ describe("applyTransforms", () => {
 		expect(applyTransforms("not an object", ["values"])).toBe("not an object");
 	});
 
+	it("should handle entries transformation", () => {
+		expect(applyTransforms({ a: 1, b: 2 }, ["entries"])).toEqual([
+			{ key: "a", value: 1 },
+			{ key: "b", value: 2 },
+		]);
+		expect(applyTransforms({}, ["entries"])).toEqual([]);
+		expect(applyTransforms(["a", "b"], ["entries"])).toEqual(["a", "b"]); // should skip arrays
+		expect(applyTransforms("not an object", ["entries"])).toBe("not an object");
+		expect(applyTransforms(null, ["entries"])).toBeNull();
+	});
+
 	it("should handle flat transformation", () => {
 		expect(
 			applyTransforms(

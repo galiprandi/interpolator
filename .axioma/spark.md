@@ -79,3 +79,7 @@
 ## 2026-07-25 - [Sequence Generation via Range Transform]
 **Learning:** Providing a way to generate sequences directly from a number (via `range`) allows users to create dynamic row counts or lists without needing to pre-calculate arrays in their data source. This is particularly useful for things like "Top N" lists or fixed-size forms.
 **Pattern:** Use simple, numeric-to-collection transforms to bridge the gap between scalar data and structural document requirements (like row expansion).
+
+## 2025-05-21 - [Object Entry Transformation for Iteration]
+**Learning:** Enabling iteration over object properties is a common requirement for dynamic templates. By providing an `entries` transform that converts objects into a standardized `{ key, value }` array, we bridge the gap between static objects and the array-based row expansion engine.
+**Pattern:** Map native language structures (like `Object.entries`) into a format that fits the library's existing iteration patterns (array of objects), ensuring consistency between different data shapes and their visual representation in the document.

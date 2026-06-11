@@ -181,6 +181,18 @@ export function applyTransforms(value: any, transforms: string[]): any {
 					result = Object.values(result);
 				}
 				break;
+			case "entries":
+				if (
+					result != null &&
+					typeof result === "object" &&
+					!Array.isArray(result)
+				) {
+					result = Object.entries(result).map(([key, value]) => ({
+						key,
+						value,
+					}));
+				}
+				break;
 			case "flat":
 				if (Array.isArray(result)) {
 					result = result.flat();
@@ -277,13 +289,27 @@ export function applyTransforms(value: any, transforms: string[]): any {
 			case "string":
 				result = String(result);
 				break;
-			case "year": if (result instanceof Date) result = result.getUTCFullYear(); break;
-			case "month": if (result instanceof Date) result = result.getUTCMonth() + 1; break;
-			case "day": if (result instanceof Date) result = result.getUTCDate(); break;
-			case "hour": if (result instanceof Date) result = result.getUTCHours(); break;
-			case "minute": if (result instanceof Date) result = result.getUTCMinutes(); break;
-			case "second": if (result instanceof Date) result = result.getUTCSeconds(); break;
-			case "weekday": if (result instanceof Date) result = result.getUTCDay(); break;
+			case "year":
+				if (result instanceof Date) result = result.getUTCFullYear();
+				break;
+			case "month":
+				if (result instanceof Date) result = result.getUTCMonth() + 1;
+				break;
+			case "day":
+				if (result instanceof Date) result = result.getUTCDate();
+				break;
+			case "hour":
+				if (result instanceof Date) result = result.getUTCHours();
+				break;
+			case "minute":
+				if (result instanceof Date) result = result.getUTCMinutes();
+				break;
+			case "second":
+				if (result instanceof Date) result = result.getUTCSeconds();
+				break;
+			case "weekday":
+				if (result instanceof Date) result = result.getUTCDay();
+				break;
 		}
 	}
 	return result;
