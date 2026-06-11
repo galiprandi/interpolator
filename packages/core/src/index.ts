@@ -268,6 +268,18 @@ export function applyTransforms(value: any, transforms: string[]): any {
 					(Array.isArray(result) && result.length === 0)
 				);
 				break;
+			case "entries":
+				if (
+					result != null &&
+					typeof result === "object" &&
+					!Array.isArray(result)
+				) {
+					result = Object.entries(result).map(([key, value]) => ({
+						key,
+						value,
+					}));
+				}
+				break;
 			case "boolean":
 				result = Boolean(result);
 				break;
