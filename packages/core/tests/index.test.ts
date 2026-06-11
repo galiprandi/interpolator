@@ -312,6 +312,17 @@ describe("applyTransforms", () => {
 		expect(applyTransforms(false, ["notempty"])).toBe(true);
 	});
 
+	it("should handle entries transformation", () => {
+		const obj = { a: 1, b: "hello" };
+		expect(applyTransforms(obj, ["entries"])).toEqual([
+			{ key: "a", value: 1 },
+			{ key: "b", value: "hello" },
+		]);
+		expect(applyTransforms({}, ["entries"])).toEqual([]);
+		expect(applyTransforms(["a", "b"], ["entries"])).toEqual(["a", "b"]); // skip arrays
+		expect(applyTransforms("not an object", ["entries"])).toBe("not an object");
+	});
+
 	it("should handle boolean transformation", () => {
 		expect(applyTransforms(1, ["boolean"])).toBe(true);
 		expect(applyTransforms(0, ["boolean"])).toBe(false);
